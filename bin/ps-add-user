@@ -1,0 +1,55 @@
+#!/bin/bash
+# example: add-user user P4$$w@rD
+
+#----------------------------------------------------------#
+#                Variáveis & Funções                       #
+#----------------------------------------------------------#
+
+USER="$1"
+PASS="$2"
+HIDE=2
+QUOTA_GB="$3"
+
+# Includes
+source "/usr/local/painelstream-server/func/main.sh"
+HOMEDIR="$BASE/$USER"
+
+#----------------------------------------------------------#
+#                    Verificações                          #
+#----------------------------------------------------------#
+check_args '2' "$#" 'USER PASS [PACKAGE]'
+
+#[ -z "$USER" ] && echo "usuario obrigatorio" && exit 1
+#[ -z "$PASS" ] && echo "senha obrigatoria" && exit 1
+[ -z "$QUOTA_GB" ] && QUOTA_GB="$DEFAULT_QUOTA_GB"
+
+[[ ! "$USER" =~ ^[a-z]+$ ]] && echo "Usuario invalido, use apenas letras" && exit 1
+id "$USER" &>/dev/null && echo "usuario existe" && exit 1
+
+useradd -m -d "$HOMEDIR" -s "$SHELL" -g "$GROUP" "$USER"
+echo "$USER:$PASS" | chpasswd
+
+#----------------------------------------------------------#
+#               Estrutura de diretórios                    #
+#----------------------------------------------------------#
+
+mkdir -p \
+    "$HOMEDIR/config" \
+    "$HOMEDIR/logs" \
+    "$HOMEDIR/playlists" \
+    "$HOMEDIR/stats" \
+    "$HOMEDIR/cache" \
+    "$HOMEDIR/autodj" \
+    "$HOMEDIR/autodj/Comercial" \
+    "$HOMEDIR/autodj/Vinhetas"
+
+chown root:root "$HOMEDIR"
+chmod 755 "$HOMEDIR"
+
+chown "$USER:$GROUP" "$HOMEDIR/$USER/autodj"
+chmod 775 "$HOMEDIR/$USER/autodj"
+
+KB=$((QUOTA_GB * 1024 * 1024))
+setquota -u "$USER" "$KB" "$KB" 0 0 "$FS_MOUNT"
+
+echo "radio criada"

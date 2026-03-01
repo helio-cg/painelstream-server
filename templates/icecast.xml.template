@@ -1,0 +1,92 @@
+<icecast>
+    <location>Brasil</location>
+    <admin>admin@painelstream.com</admin>
+    <hostname>${HOSTNAME}</hostname>
+
+    <!-- Headers CORS globais -->
+    <http-headers>
+        <header name="Access-Control-Allow-Origin" value="*" />
+        <header name="Access-Control-Allow-Methods" value="GET, OPTIONS" />
+        <header name="Access-Control-Allow-Headers" value="Content-Type" />
+    </http-headers>
+
+    <limits>
+        <clients>${OUVINTES}</clients>
+        <sources>2</sources>
+        <queue-size>524288</queue-size>
+        <client-timeout>30</client-timeout>
+        <header-timeout>15</header-timeout>
+        <source-timeout>10</source-timeout>
+        <burst-on-connect>1</burst-on-connect>
+        <burst-size>65535</burst-size>
+    </limits>
+
+    <authentication>
+        <source-password>${PASSWORD}</source-password>
+        <relay-password>${PASSWORD}</relay-password>
+        <admin-user>admin</admin-user>
+        <admin-password>dj${PASSWORD}</admin-password>
+    </authentication>
+
+    <directory>
+        <yp-url-timeout>15</yp-url-timeout>
+        <yp-url>http://dir.xiph.org/cgi-bin/yp-cgi</yp-url>
+    </directory>
+
+    <mime-types>
+        <mime-type>
+            <type>audio/ogg</type>
+            <extension>ogg</extension>
+        </mime-type>
+    </mime-types>
+
+    <listen-socket>
+        <port>${PORTA}</port>
+	    <bind-address>0.0.0.0</bind-address>
+    </listen-socket>
+
+    <mount>
+        <mount-name>/stream</mount-name>
+        <max-bitrate>${MAXBITRATE}</max-bitrate>
+        <public>1</public>
+        <password>${PASSWORD}</password>
+        <intro>intro.mp3</intro>
+    </mount>
+
+    <mount>
+        <mount-name>/live</mount-name>
+        <max-bitrate>${MAXBITRATE}</max-bitrate>
+        <password>${PASSWORD}</password>
+    </mount>
+
+    <!-- Mounts de DJs -->
+    ${ICECAST_MOUNTS}
+
+    <fileserve>1</fileserve>
+
+    <paths>
+        <basedir>/usr/share/icecast2</basedir>
+        <logdir>/home/${USER}/logs</logdir>
+        <webroot>/usr/share/icecast2/web</webroot>
+        <adminroot>/usr/share/icecast2/admin</adminroot>
+        <alias source='/' destination='/status.xsl'/>
+        <pidfile>/home/${USER}/logs/icecast.pid</pidfile>
+    </paths>
+
+    <logging>
+        <accesslog>${USER}-access.log</accesslog>
+        <errorlog>${USER}-error.log</errorlog>
+        <loglevel>2</loglevel>
+        <logsize>1000</logsize>
+    </logging>
+
+    <security>
+        <chroot>0</chroot>
+        <changeowner>
+            <user>${USER}</user>
+            <group>${USER}</group>
+        </changeowner>
+    </security>
+
+    ${RELAY_BLOCK}
+</icecast>
