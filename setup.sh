@@ -34,7 +34,7 @@ fi
 
 # Atualiza e instala pacotes
 apt update && apt upgrade -y
-apt install git rsync -y
+apt install git rsync ca-certificates -y
 
 cd /usr/local && git clone git@github.com:helio-cg/painelstream-server.git painelstream
 
