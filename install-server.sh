@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Instalar pacotes
 #apt install quota -y
