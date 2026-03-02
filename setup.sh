@@ -24,9 +24,10 @@ sudo systemctl restart caddy
 
 # Habilitando quota
 sudo cp /etc/fstab /etc/fstab.bak.$(date +%F-%H%M%S) && sudo sed -i -E '/errors=remount-ro/ {/usrquota/! s/errors=remount-ro/errors=remount-ro,usrquota,grpquota/}' /etc/fstab
-tune2fs -O quota /dev/sda1
-quotaon -v /
-quotacheck -cum / # Esse comando deve se executado caso a qouta não seja ativada
+sudo mount -o remount /
+sudo tune2fs -O quota /dev/sda1
+sudo quotacheck -cum / # Esse comando deve se executado caso a qouta não seja ativada
+sudo quotaon -v /
 
 # Copia arquivos para base
 mkdir /usr/local/painelstream
