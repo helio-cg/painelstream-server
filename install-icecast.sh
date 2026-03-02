@@ -21,7 +21,9 @@ icecast2 -v
 liquidsoap --version
 
 rm -rf /etc/icecast2/icecast.xml
-cp /usr/local/painelstream/templates/icecast-base-xml /etc/icecast2/icecast.xml
+cp /usr/local/painelstream/templates/icecast-base.xml /etc/icecast2/icecast.xml
 
-systemctl start icecast2
-systemctl reload icecast2
+sleep 2
+
+sudo systemctl start icecast2
+sudo systemctl reload icecast2

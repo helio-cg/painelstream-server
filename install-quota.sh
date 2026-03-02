@@ -28,12 +28,19 @@ for PART in "${PARTITIONS[@]}"; do
 
     # Substitui errors=remount-ro por errors=remount-ro,usrquota,grpquota
     # Verifica se já existe exatamente a string
-    if ! grep -q "errors=remount-ro,usrquota,grpquota" /etc/fstab; then
+    fstab_clean=$(grep -v '^\s*#' /etc/fstab | grep -E '\sext4\s')
+
+    if echo "$fstab_clean" | grep -qE '(^|,)usrquota(,|$)' && \
+        echo "$fstab_clean" | grep -qE '(^|,)grpquota(,|$)'; then
+        echo "========================================================"
+        echo "usrquota,grpquota já configurados no fstab para $DEVICE"
+        echo "========================================================"
+    else
         # Substitui errors=remount-ro apenas se não tiver a versão completa
+        echo "========================================================"
         sed -i "s/errors=remount-ro/errors=remount-ro,usrquota,grpquota/" /etc/fstab
         echo "usrquota,grpquota adicionados ao fstab para $DEVICE"
-    else
-        echo "usrquota,grpquota já configurados no fstab para $DEVICE"
+        echo "========================================================"
     fi
 
     # Recarregar systemd e remontar
