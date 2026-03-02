@@ -5,7 +5,7 @@ PASS=$2 HIDE=2
 LISTENERS=$3
 
 # Includes
-source "/usr/local/painelstream-server/func/main.sh"
+source "/usr/local/painelstream/func/main.sh"
 
 check_args '3' "$#" 'USER PASS LISTENERS'
 

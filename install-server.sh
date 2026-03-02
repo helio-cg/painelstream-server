@@ -1,11 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
 # Instalar pacotes
 #apt install quota -y
 
 # Atualiza permissão arquivos do sistema
-chmod 600 /usr/local/painelstream-server/func/main.sh
-chown root:root /usr/local/painelstream-server/func/main.sh
+chmod 600 /usr/local/painelstream/func/main.sh
+chown root:root /usr/local/painelstream/func/main.sh
 
 # Cria o grupo de acesso sftp
 groupadd radiosftp

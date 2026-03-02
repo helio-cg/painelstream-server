@@ -1,43 +1,39 @@
 #!/bin/bash
-# Verificar se é root
-if [ "x$(id -u)" != 'x0' ]; then
-	echo 'Error: this script can only be executed by root'
-	exit 1
-fi
 
-# Detect OS
-if [ -e "/etc/os-release" ] && [ ! -e "/etc/redhat-release" ]; then
-	type=$(grep "^ID=" /etc/os-release | cut -f 2 -d '=')
-    if [ "$type" = "debian" ]; then
-		release=$(cat /etc/debian_version | grep -o "[0-9]\{1,2\}" | head -n1)
-		VERSION='debian'
-	else
-		type="NoSupport"
-	fi
-else
-	type="NoSupport"
-fi
-
-no_support_message() {
-	echo "****************************************************"
-	echo "Your operating system (OS) is not supported by"
-	echo "PainelStream. Officially supported releases:"
-	echo "****************************************************"
-	echo "  Debian 12, 13"
-	echo ""
-	exit 1
-}
-
-if [ "$type" = "NoSupport" ]; then
-	no_support_message
-fi
 
 # Atualiza e instala pacotes
 apt update && apt upgrade -y
 apt install git rsync ca-certificates -y
 
-cd /usr/local && git clone git@github.com:helio-cg/painelstream-server.git painelstream
+# Install caddy proxy
+sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.sh' | sudo bash
+sudo apt install -y caddy
+
+sudo sed -i '$ a \
+14.stmip.net {\
+    handle_path / {
+        root * /usr/local/painelstream
+        file_server
+    }
+
+    # Bloquear acesso a páginas sensíveis\
+    @admin path /admin* / /status.xsl\
+    respond @admin 403\
+
+    reverse_proxy / 127.0.0.1:8000 {\
+        header_up X-Forwarded-For {remote_host}\
+    }\
+}' /etc/caddy/Caddyfile
+
+sudo systemctl enable --now caddy
+sudo systemctl restart caddy
+
+# Copia arquivos para base
+mkdir /usr/local/painelstream
+git clone https://github.com/helio-cg/painelstream-server.git /usr/local/painelstream
 
 cd /usr/local/painelstream
-sh ./install-icecast.sh
 sh ./install-quota.sh
+sh ./install-icecast.sh
+sh /usr/local/painelstream/install-server.sh

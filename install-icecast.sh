@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 sudo apt update && sudo apt upgrade -y
 
@@ -19,3 +19,9 @@ sudo apt install liquidsoap -y
 
 icecast2 -v
 liquidsoap --version
+
+rm -rf /etc/icecast2/icecast.xml
+cp /usr/local/painelstream/templates/icecast-base-xml /etc/icecast2/icecast.xml
+
+systemctl start icecast2
+systemctl reload icecast2

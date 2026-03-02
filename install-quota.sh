@@ -1,11 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 echo "=== Instalando quota se necessário ==="
 if ! dpkg -l | grep -qw quota; then
     apt update
     apt install -y quota
-    mkdir /usr/local/painelstream-server
+    mkdir /usr/local/painelstream
 fi
 
 PARTITIONS=("/")

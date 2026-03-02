@@ -11,7 +11,7 @@ HIDE=2
 QUOTA_GB="$3"
 
 # Includes
-source "/usr/local/painelstream-server/func/main.sh"
+source "/usr/local/painelstream/func/main.sh"
 HOMEDIR="$BASE/$USER"
 
 #----------------------------------------------------------#

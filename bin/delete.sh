@@ -1,5 +1,5 @@
 #!/bin/bash
-CONFIG="/usr/local/painelstream-server/func/main.sh"
+CONFIG="/usr/local/painelstream/func/main.sh"
 source "$CONFIG"
 
 USER="$1"
