@@ -8,7 +8,12 @@
     @admin path /admin* /status.xsl
     respond @admin 403
 
-    reverse_proxy / 127.0.0.1:8000 {
+    reverse_proxy 127.0.0.1:8000 {
         header_up X-Forwarded-For {remote_host}
+        flush_interval -1
+
+        transport http {
+            keepalive 0
+        }
     }
 }

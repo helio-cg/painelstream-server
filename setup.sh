@@ -4,7 +4,7 @@
 # Atualiza e instala pacotes
 apt update -y
 apt upgrade -y
-apt install git rsync ca-certificates -y
+apt install git rsync ca-certificates quota -y
 
 # Install caddy proxy
 sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
@@ -22,11 +22,18 @@ sed -e "s|{{DOMAIN}}|$DOMAIN|g" \
 sudo systemctl enable --now caddy
 sudo systemctl restart caddy
 
+# Habilitando quota
+sudo cp /etc/fstab /etc/fstab.bak.$(date +%F-%H%M%S) && sudo sed -i -E '/errors=remount-ro/ {/usrquota/! s/errors=remount-ro/errors=remount-ro,usrquota,grpquota/}' /etc/fstab
+tune2fs -O quota /dev/sda1
+quotaon -v /
+quotacheck -cum / # Esse comando deve se executado caso a qouta não seja ativada
+
 # Copia arquivos para base
 mkdir /usr/local/painelstream
 git clone https://github.com/helio-cg/painelstream-server.git /usr/local/painelstream
 
+
+
 cd /usr/local/painelstream
-sh ./install-quota.sh
 sh ./install-icecast.sh
 sh /usr/local/painelstream/install-server.sh
