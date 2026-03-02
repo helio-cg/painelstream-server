@@ -1,22 +1,23 @@
 #!/bin/bash
 
 USER=$1
-PASS=$2 HIDE=2
+PASS=$2
+HIDE=2
 LISTENERS=$3
 
 # Includes
 source "/usr/local/painelstream/func/main.sh"
 
-check_args '3' "$#" 'USER PASS LISTENERS'
+[ -z "$USER" ] && echo "usuario obrigatorio" && exit 1
+[ -z "$PASS" ] && echo "senha obrigatoria" && exit 1
+[ -z "$LISTENERS" ] && echo "numero de ouvintes deve ser informado" && exit 1
 
-# Exporta variáveis para substituição
 export USER PASS LISTENERS
 
-TEMPLATE_PATH="/usr/local/painelstream-server/templates/icecast-mount.xml.template"
-DESTINO="$BASE/$USER/config/icecast-mount.xml"
+TEMPLATE_PATH="/usr/local/painelstream/templates/icecast-mount.tpl"
+DESTINO="/home/$USER/config/icecast-mount.xml"
 
-# Gera o arquivo de configuração
 envsubst < "$TEMPLATE_PATH" > "$DESTINO"
 chmod 660 "$DESTINO"
 
-exit
+exit 0

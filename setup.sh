@@ -1,26 +1,20 @@
 #!/bin/bash
 
+DOMAIN=$1
 
 # Atualiza e instala pacotes
 apt update -y
 apt upgrade -y
-apt install git rsync ca-certificates quota -y
+apt install git rsync ca-certificates quota libxml2-utils -y
 
 # Install caddy proxy
 sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.sh' | sudo bash
 sudo apt install -y caddy
 
-DOMAIN="14.stmip.net"
-ROOT_PATH="/usr/local/painelstream"
-
-sed -e "s|{{DOMAIN}}|$DOMAIN|g" \
-    -e "s|{{ROOT_PATH}}|$ROOT_PATH|g" \
-    /usr/local/painelstream/templates/caddy.tpl \
-    | sudo tee -a /etc/caddy/Caddyfile > /dev/null
-
+# Configura Caddy
+sudo /usr/local/painelstream/src/caddy.sh $DOMAIN
 sudo systemctl enable --now caddy
-sudo systemctl restart caddy
 
 # Habilitando quota
 sudo cp /etc/fstab /etc/fstab.bak.$(date +%F-%H%M%S) && sudo sed -i -E '/errors=remount-ro/ {/usrquota/! s/errors=remount-ro/errors=remount-ro,usrquota,grpquota/}' /etc/fstab
@@ -33,7 +27,21 @@ sudo quotaon -v /
 mkdir /usr/local/painelstream
 git clone https://github.com/helio-cg/painelstream-server.git /usr/local/painelstream
 
+BIN_PATH="/usr/local/painelstream/bin"
+BASHRC="$HOME/.bashrc"
 
+echo "Configurando PATH em $BASHRC ..."
+
+# Verifica se já existe
+if ! grep -q "$BIN_PATH" "$BASHRC"; then
+    echo "" >> "$BASHRC"
+    echo "# PainelStream PATH" >> "$BASHRC"
+    echo "export PATH=\$PATH:$BIN_PATH" >> "$BASHRC"
+    echo "PATH adicionado com sucesso!"
+else
+    echo "PATH já está configurado."
+fi
+echo "Execute: source ~/.bashrc ou abra novo terminal."
 
 cd /usr/local/painelstream
 sh ./install-icecast.sh

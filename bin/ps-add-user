@@ -6,8 +6,7 @@
 #----------------------------------------------------------#
 
 USER="$1"
-PASS="$2"
-HIDE=2
+PASS="$2" HIDE=2
 QUOTA_GB="$3"
 
 # Includes
@@ -56,8 +55,13 @@ chmod -R 755 \
     "$HOMEDIR/playlists" \
     "$HOMEDIR/stats"
 
-# End Estrutura de diretórios
+# Cria mount
+sudo $PAINELSTREAM/bin/icecast-mount $USER $PASS 10
 
+# Recarreca Icecast
+sudo $PAINELSTREAM/src/icecast-build.sh
+
+# Cria limite de espaçõ
 KB=$((QUOTA_GB * 1024 * 1024))
 setquota -u "$USER" "$KB" "$KB" 0 0 "$FS_MOUNT"
 

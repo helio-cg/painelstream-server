@@ -5,25 +5,24 @@ OUTPUT="/etc/icecast2/icecast.xml"
 
 echo "Gerando novo icecast.xml..."
 
-# Começa com base
-cat "$BASE" > "$OUTPUT"
+# Remove última linha </icecast> do base
+sed '$d' "$BASE" > "$OUTPUT"
 
-# Procura todos radio*.xml
-for file in /home/*/config/mount.xml; do
-    if [ -f "$file" ]; then
-        echo "Incluindo $file"
-        cat "$file" >> "$OUTPUT"
-    fi
+# Adiciona mounts
+for file in /home/*/config/icecast-mount.xml; do
+    [ -f "$file" ] && cat "$file" >> "$OUTPUT"
 done
 
-# Fecha tag icecast se necessário
+# Fecha XML
 echo "</icecast>" >> "$OUTPUT"
 
-# Ajusta permissões
+# Permissões
 chown root:icecast "$OUTPUT"
 chmod 644 "$OUTPUT"
 
-echo "Reload Icecast..."
+xmllint --format "$OUTPUT" -o "$OUTPUT"
+
+echo "Recarregando Icecast..."
 systemctl reload icecast2
 
 echo "Concluído!"
