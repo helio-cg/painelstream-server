@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-BASE="/home"
-GROUP="radiosftp"
-FS_MOUNT="/"
-DEFAULT_QUOTA_GB=1
-SHELL="/usr/sbin/nologin"
+# Diretório do main.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Importa constants.sh relativo a main.sh
+source "$SCRIPT_DIR/constants.sh"
 
 check_args() {
     expected="$1"

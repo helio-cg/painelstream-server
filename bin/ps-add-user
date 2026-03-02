@@ -2,6 +2,11 @@
 # example: add-user user P4$$w@rD
 
 #----------------------------------------------------------#
+#                    Verificações                          #
+#----------------------------------------------------------#
+check_args '2' "$#" 'USER PASS [PACKAGE]'
+
+#----------------------------------------------------------#
 #                Variáveis & Funções                       #
 #----------------------------------------------------------#
 
@@ -11,13 +16,8 @@ HIDE=2
 QUOTA_GB="$3"
 
 # Includes
-source "/usr/local/painelstream/func/main.sh"
+source "$PAINELSTREAM/func/main.sh"
 HOMEDIR="$BASE/$USER"
-
-#----------------------------------------------------------#
-#                    Verificações                          #
-#----------------------------------------------------------#
-check_args '2' "$#" 'USER PASS [PACKAGE]'
 
 #[ -z "$USER" ] && echo "usuario obrigatorio" && exit 1
 #[ -z "$PASS" ] && echo "senha obrigatoria" && exit 1
