@@ -20,8 +20,7 @@ sudo systemctl enable --now caddy
 sudo cp /etc/fstab /etc/fstab.bak.$(date +%F-%H%M%S) && sudo sed -i -E '/errors=remount-ro/ {/usrquota/! s/errors=remount-ro/errors=remount-ro,usrquota,grpquota/}' /etc/fstab
 sudo mount -o remount /
 sudo tune2fs -O quota /dev/sda1
-sudo quotacheck -cum / # Esse comando deve se executado caso a qouta não seja ativada
-sudo quotaon -v /
+sudo repquota -a # Ver cota de usuários
 
 # Copia arquivos para base
 mkdir /usr/local/painelstream
