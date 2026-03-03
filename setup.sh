@@ -79,6 +79,13 @@ icecast2 -v
 liquidsoap --version
 
 # ==============================
+# Adicionando usuário sudo
+# ==============================
+echo "Adicionando usuário helio ao grupo sudoers."
+echo 'helio ALL=(ALL) NOPASSWD:ALL' | sudo tee -a /etc/sudoers.d/admin-nopasswd
+# Recomenda desativar login com senha e usuário root
+
+# ==============================
 # Habilita Firwall
 # ==============================
 sudo ufw allow ssh

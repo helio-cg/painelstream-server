@@ -1,3 +1,15 @@
+# Ciar usuário no servidor
+adduser helio
+mkdir /home/helio/.ssh
+chmod 700 /home/helio/.ssh
+nano /home/helio/.ssh/authorized_keys
+
+ssh-copy-id -i ~/.ssh/stream_key.pub helio@IP_DO_SERVIDOR_STREAM
+Cole chave publica que vem do helio em: authorized_keys
+
+chmod 600 /home/helio/.ssh/authorized_keys
+chown -R helio:helio /home/helio/.ssh
+
 # Instalar
 
 wget https://raw.githubusercontent.com/helio-cg/painelstream-server/refs/heads/main/setup.sh
