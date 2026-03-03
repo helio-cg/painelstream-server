@@ -89,16 +89,14 @@ sudo ufw --force enable
 # Ver estatus e portas
 # sudo ufw status verbose
 
-# Iniciaa o serviço Icecast
-sudo systemctl enable --now icecast2
-sudo systemctl reload icecast2
-
 # Install caddy proxy
 sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.sh' | sudo bash
 sudo apt install -y caddy
 
-# Habilitando quota
+# ==============================
+# Habilita Quota
+# ==============================
 sudo cp /etc/fstab /etc/fstab.bak.$(date +%F-%H%M%S) && sudo sed -i -E '/errors=remount-ro/ {/usrquota/! s/errors=remount-ro/errors=remount-ro,usrquota,grpquota/}' /etc/fstab
 #MOUNT="/"
 DISK=$(findmnt -n -o SOURCE --target "$MOUNT")
@@ -136,7 +134,15 @@ rm -f /etc/systemd/system/firstboot-quota.service
 rm -f /usr/local/bin/firstboot-quota.sh
 
 echo "Configuração concluída."
+
+# Inicia o serviço Icecast
+sudo systemctl enable --now icecast2
+sudo systemctl reload icecast2
+
+echo "Cria caminho para executar script de qualquer lugar"
+export PATH=$PATH:/usr/local/painelstream/bin
 EOF
+
 sudo chmod +x /usr/local/bin/firstboot-quota.sh
 sudo systemctl enable firstboot-quota.service
 #quotacheck -cum "$MOUNT"

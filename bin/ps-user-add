@@ -56,7 +56,7 @@ chmod -R 755 \
     "$HOMEDIR/stats"
 
 # Cria mount
-sudo $PAINELSTREAM/bin/mount-create $USER $PASS 10
+sudo $PAINELSTREAM/bin/ps-mount-add $USER $PASS 10
 
 # Recarreca Icecast
 sudo $PAINELSTREAM/src/icecast-build.sh
