@@ -49,17 +49,27 @@ echo "✅ Prosseguindo com configuração para $DOMAIN..."
 # ==============================
 apt update -y
 apt upgrade -y
-apt install git rsync ca-certificates quota libxml2-utils -y
+apt install git rsync ca-certificates quota libxml2-utils ufw -y
 # Codec AAC, MP3 e OPUS
 sudo apt install libfdk-aac-dev fdkaac libmp3lame-dev lame libopus0 libopusfile0 libogg0 opus-tools -y
 # Instalação do Icecast2
 sudo apt install icecast2 -y
 # Instalação do Liquidsoap
 sudo apt install liquidsoap -y
-
 # Verifica se foi instalado
 icecast2 -v
 liquidsoap --version
+
+# ==============================
+# Habilita Firwall
+# ==============================
+sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw allow https
+sudo ufw allow 8000/tcp
+sudo ufw enable
+# Ver estatus e portas
+# sudo ufw status verbose
 
 rm -rf /etc/icecast2/icecast.xml
 cp /usr/local/painelstream/templates/icecast-base.xml /etc/icecast2/icecast.xml
@@ -67,7 +77,7 @@ cp /usr/local/painelstream/templates/icecast-base.xml /etc/icecast2/icecast.xml
 sleep 1
 
 # Iniciaa o serviço Icecast
-sudo systemctl start icecast2
+sudo systemctl enable --now icecast2
 sudo systemctl reload icecast2
 
 # Install caddy proxy
