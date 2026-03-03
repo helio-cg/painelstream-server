@@ -48,4 +48,4 @@
     <security>
         <chroot>0</chroot>
     </security>
-
+</icecast>

@@ -14,8 +14,8 @@ source "/usr/local/painelstream/func/main.sh"
 
 export USER PASS LISTENERS
 
-TEMPLATE_PATH="/usr/local/painelstream/templates/icecast-mount.tpl"
-DESTINO="/home/$USER/config/icecast-mount.xml"
+TEMPLATE_PATH="/usr/local/painelstream/templates/mount.tpl"
+DESTINO="/home/$USER/config/mount.xml"
 
 envsubst < "$TEMPLATE_PATH" > "$DESTINO"
 chmod 660 "$DESTINO"

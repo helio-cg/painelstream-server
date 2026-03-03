@@ -9,7 +9,7 @@ echo "Gerando novo icecast.xml..."
 sed '$d' "$BASE" > "$OUTPUT"
 
 # Adiciona mounts
-for file in /home/*/config/icecast-mount.xml; do
+for file in /home/*/config/mount.xml; do
     [ -f "$file" ] && cat "$file" >> "$OUTPUT"
 done
 
