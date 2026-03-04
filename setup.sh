@@ -82,10 +82,10 @@ liquidsoap --version
 # Criar usuário sudo
 # ==============================
 # Cria usuário sem senha (disabled password)
-sudo useradd -m -s /bin/bash "helio"
+#sudo useradd -m -s /bin/bash "helio"
 # Adiciona ao grupo sudo (Ubuntu/Debian) ou wheel (CentOS/RHEL)
-sudo usermod -aG sudo "helio"  # ou wheel, dependendo da distro
-echo 'helio ALL=(ALL) NOPASSWD:ALL' | sudo tee -a /etc/sudoers.d/helio-nopasswd
+#sudo usermod -aG sudo "helio"  # ou wheel, dependendo da distro
+#echo 'helio ALL=(ALL) NOPASSWD:ALL' | sudo tee -a /etc/sudoers.d/helio-nopasswd
 # Recomenda desativar login com senha e usuário root
 
 # ==============================
@@ -146,12 +146,14 @@ rm -f /usr/local/bin/firstboot-quota.sh
 echo "Configuração concluída."
 
 # Inicia o serviço Icecast
-sudo systemctl enable --now icecast2
-sudo systemctl reload icecast2
+sudo systemctl enable icecast2
+sudo systemctl start icecast2
+#sudo systemctl reload icecast2
+
+EOF
 
 echo "Cria caminho para executar script de qualquer lugar"
 export PATH=$PATH:/usr/local/painelstream/bin
-EOF
 
 sudo chmod +x /usr/local/bin/firstboot-quota.sh
 sudo systemctl enable firstboot-quota.service
@@ -196,3 +198,6 @@ Match Group radiosftp
 EOF
 
 systemctl restart ssh
+
+echo "Instalação concluida"
+echo "Desative usuário root e acesso ssh com senha"
