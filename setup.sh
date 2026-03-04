@@ -79,10 +79,13 @@ icecast2 -v
 liquidsoap --version
 
 # ==============================
-# Adicionando usuário sudo
+# Criar usuário sudo
 # ==============================
-echo "Adicionando usuário helio ao grupo sudoers."
-echo 'helio ALL=(ALL) NOPASSWD:ALL' | sudo tee -a /etc/sudoers.d/admin-nopasswd
+# Cria usuário sem senha (disabled password)
+sudo useradd -m -s /bin/bash "helio"
+# Adiciona ao grupo sudo (Ubuntu/Debian) ou wheel (CentOS/RHEL)
+sudo usermod -aG sudo "helio"  # ou wheel, dependendo da distro
+echo 'helio ALL=(ALL) NOPASSWD:ALL' | sudo tee -a /etc/sudoers.d/helio-nopasswd
 # Recomenda desativar login com senha e usuário root
 
 # ==============================
