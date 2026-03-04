@@ -1,4 +1,9 @@
 #!/bin/bash
+export PATH=$PATH:/usr/sbin:/sbin:/bin:/usr/bin
+# Se veio via SSH com command= no authorized_keys
+if [ -n "$SSH_ORIGINAL_COMMAND" ]; then
+    eval set -- $SSH_ORIGINAL_COMMAND
+fi
 
 ACTION=$1
 PARAM1=$2

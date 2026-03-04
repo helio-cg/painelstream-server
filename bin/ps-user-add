@@ -1,32 +1,66 @@
 #!/bin/bash
-# example: add-user user P4$$w@rD
+# example: add-user user P4$$w@rD 10
+
+set -e
 
 #----------------------------------------------------------#
 #                Variáveis & Funções                       #
 #----------------------------------------------------------#
 
-USER="$1"
-PASS="$2" HIDE=2
+USERNAME="$1"
+PASS="$2"
+HIDE=2
 QUOTA_GB="$3"
+LISTENERS="$4"
 
-# Includes
+USER_CREATED=false
+
+rollback() {
+    echo "Erro detectado. Executando rollback..." >&2
+
+    if [ "$USER_CREATED" = true ]; then
+        sudo userdel -r "$USERNAME" 2>/dev/null || true
+    fi
+
+    echo "{\"status\":\"error\",\"message\":\"Falha na criacao da radio. Rollback executado.\"}"
+    exit 1
+}
+
+trap rollback ERR
+
+#----------------------------------------------------------#
+#                Includes                                  #
+#----------------------------------------------------------#
 source "/usr/local/painelstream/func/main.sh"
-HOMEDIR="$BASE/$USER"
+HOMEDIR="$BASE/$USERNAME"
 
-[ -z "$USER" ] && echo "usuario obrigatorio" && exit 1
+#----------------------------------------------------------#
+#                Includes                                  #
+#----------------------------------------------------------#
+[ -z "$USERNAME" ] && echo "usuario obrigatorio" && exit 1
 [ -z "$PASS" ] && echo "senha obrigatoria" && exit 1
 [ -z "$QUOTA_GB" ] && QUOTA_GB="$DEFAULT_QUOTA_GB"
+[ -z "$LISTENERS" ] && LISTENERS="$DEFAULT_LISTENERS"
 
-[[ ! "$USER" =~ ^[a-z]+$ ]] && echo "Usuario invalido, use apenas letras" && exit 1
-id "$USER" &>/dev/null && echo "usuario existe" && exit 1
+[[ ! "$USERNAME" =~ ^[a-z]+$ ]] && echo "Usuario invalido, use apenas letras" && exit 1
+id "$USERNAME" &>/dev/null && echo "usuario existe" && exit 1
 
-useradd -m -d "$HOMEDIR" -s "$SHELL" -g "$GROUP" "$USER"
-echo "$USER:$PASS" | chpasswd
+if ! getent group "$GROUP" >/dev/null; then
+    sudo groupadd "$GROUP"
+fi
+
+#----------------------------------------------------------#
+#                Includes                                  #
+#----------------------------------------------------------#
+sudo /usr/sbin/useradd -m -d "$HOMEDIR" -s /bin/bash -g "$GROUP" "$USERNAME"
+USER_CREATED=true
+
+echo "$USERNAME:$PASS" | sudo chpasswd
 
 #----------------------------------------------------------#
 #               Estrutura de diretórios                    #
 #----------------------------------------------------------#
-mkdir -p \
+sudo mkdir -p \
     "$HOMEDIR/autodj/Comercial" \
     "$HOMEDIR/autodj/Vinhetas" \
     "$HOMEDIR/config" \
@@ -34,35 +68,45 @@ mkdir -p \
     "$HOMEDIR/playlists" \
     "$HOMEDIR/stats"
 
-# Pasta principal precisa ser root para chroot
-chown root:root "$HOMEDIR"
-chmod 755 "$HOMEDIR"
+sudo chown root:root "$HOMEDIR"
+sudo chmod 755 "$HOMEDIR"
 
-# Só autodj pertence ao cliente
-chown -R "$USER:$GROUP" "$HOMEDIR/autodj"
-chmod -R 775 "$HOMEDIR/autodj"
+sudo chown -R "$USERNAME:$GROUP" "$HOMEDIR/autodj"
+sudo chmod -R 775 "$HOMEDIR/autodj"
 
-# Restante fica root
-chown -R root:root \
+sudo chown -R root:root \
     "$HOMEDIR/config" \
     "$HOMEDIR/logs" \
     "$HOMEDIR/playlists" \
     "$HOMEDIR/stats"
 
-chmod -R 755 \
+sudo chmod -R 755 \
     "$HOMEDIR/config" \
     "$HOMEDIR/logs" \
     "$HOMEDIR/playlists" \
     "$HOMEDIR/stats"
 
-# Cria mount
-sudo $PAINELSTREAM/bin/ps-mount-add $USER $PASS 10
+#----------------------------------------------------------#
+#                Icecast                                   #
+#----------------------------------------------------------#
+sudo "$PAINELSTREAM/bin/ps-mount-add" "$USERNAME" "$PASS" "$LISTENERS"
+sudo "$PAINELSTREAM/src/icecast-build.sh"
 
-# Recarreca Icecast
-sudo $PAINELSTREAM/src/icecast-build.sh
+#----------------------------------------------------------#
+#                Quota                                     #
+#----------------------------------------------------------#
+if ! [[ "$QUOTA_GB" =~ ^[0-9]+$ ]]; then
+    echo "Quota invalida, usando padrao ($DEFAULT_QUOTA_GB GB)"
+    QUOTA_GB="$DEFAULT_QUOTA_GB"
+fi
 
-# Cria limite de espaçõ
 KB=$((QUOTA_GB * 1024 * 1024))
-setquota -u "$USER" "$KB" "$KB" 0 0 "$FS_MOUNT"
+sudo setquota -u "$USERNAME" "$KB" "$KB" 0 0 "$FS_MOUNT"
 
-echo "radio criada"
+#----------------------------------------------------------#
+#                        Response                          #
+#----------------------------------------------------------#
+trap - ERR
+
+echo "{\"status\":\"success\",\"message\":\"Radio criada com sucesso\",\"user\":\"$USERNAME\"}"
+exit 0

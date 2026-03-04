@@ -2,6 +2,8 @@
 set -e
 
 USERNAME="$1"
+PASS="$2"
+LISTENERS="$3"
 
 [ -z "$USERNAME" ] && echo '{"status":"error","message":"usuario obrigatorio"}' && exit 1
 [[ ! "$USERNAME" =~ ^[a-z]+$ ]] && echo '{"status":"error","message":"usuario invalido"}' && exit 1
@@ -11,12 +13,11 @@ if ! id "$USERNAME" &>/dev/null; then
     exit 1
 fi
 
-source "/usr/local/painelstream/func/main.sh"
+sudo usermod -U "$USERNAME"
+sudo usermod -s /bin/bash "$USERNAME"
 
-pkill -u "$USERNAME" 2>/dev/null
-
+sudo "$PAINELSTREAM/bin/ps-mount-add" "$USERNAME" "$PASS" "$LISTENERS"
 sudo "$PAINELSTREAM/src/icecast-build.sh" || true
-sudo userdel -r "$USERNAME"
 
-echo "{\"status\":\"success\",\"message\":\"Radio removida com sucesso\",\"user\":\"$USERNAME\"}"
+echo "{\"status\":\"success\",\"message\":\"Radio reativada com sucesso\",\"user\":\"$USERNAME\"}"
 exit 0
