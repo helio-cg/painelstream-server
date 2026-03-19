@@ -1,11 +1,11 @@
 # Ciar usuário no servidor
-adduser helio
+adduser ps
 
-ssh-copy-id -i ~/.ssh/id_ed25519.pub helio@IP_DO_SERVIDOR_STREAM
+ssh-copy-id -i ~/.ssh/id_ed25519.pub ps@IP_DO_SERVIDOR_STREAM
 
-echo 'helio ALL=(ALL) NOPASSWD:ALL' | sudo tee -a /etc/sudoers.d/helio-nopasswd
+echo 'ps ALL=(ALL) NOPASSWD:ALL' | sudo tee -a /etc/sudoers.d/ps-nopasswd
 
-ssh helio@IP_DO_SERVIDOR_STREAM
+ssh ps@IP_DO_SERVIDOR_STREAM
 ssh-keygen
 
 # Permissões de autorização, adicione antes da chave
