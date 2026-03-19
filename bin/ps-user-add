@@ -74,7 +74,7 @@ sudo chmod 755 "$HOMEDIR"
 sudo chown -R "$USERNAME:$GROUP" "$HOMEDIR/autodj"
 sudo chmod -R 775 "$HOMEDIR/autodj"
 
-sudo chown -R root:root \
+sudo chown -R $SUSER:$SUSER \
     "$HOMEDIR/config" \
     "$HOMEDIR/logs" \
     "$HOMEDIR/playlists" \

@@ -13,7 +13,7 @@ fi
 
 pkill -u "$USERNAME" 2>/dev/null
 
-sudo rm -rf /home/$USER/config/mount.xml
+sudo rm -rf /home/$USERNAME/config/mount.xml
 sudo "$PAINELSTREAM/src/icecast-build.sh" || true
 
 sudo usermod -L "$USERNAME"

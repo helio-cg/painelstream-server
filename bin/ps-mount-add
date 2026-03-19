@@ -1,6 +1,6 @@
 #!/bin/bash
 
-USER=$1
+USERNAME=$1
 PASS=$2
 HIDE=2
 LISTENERS=$3
@@ -8,16 +8,18 @@ LISTENERS=$3
 # Includes
 source "/usr/local/painelstream/func/main.sh"
 
-[ -z "$USER" ] && echo "usuario obrigatorio" && exit 1
+[ -z "$USERNAME" ] && echo "usuario obrigatorio" && exit 1
 [ -z "$PASS" ] && echo "senha obrigatoria" && exit 1
 [ -z "$LISTENERS" ] && echo "numero de ouvintes deve ser informado" && exit 1
 
-export USER PASS LISTENERS
+export USERNAME PASS LISTENERS
 
 TEMPLATE_PATH="/usr/local/painelstream/templates/mount.tpl"
-DESTINO="/home/$USER/config/mount.xml"
+DESTINO="/home/$USERNAME/config/mount.xml"
 
 envsubst < "$TEMPLATE_PATH" > "$DESTINO"
 chmod 660 "$DESTINO"
+
+sudo chown -R $SUSER:$SUSER $DESTINO
 
 exit 0
