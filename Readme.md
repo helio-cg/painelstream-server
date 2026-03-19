@@ -2,11 +2,12 @@
 adduser helio
 mkdir /home/helio/.ssh
 
+# Execute local (essa chave deve está no servidor do painel para se conectr com servidor stream)
 ssh-copy-id -i ~/.ssh/id_ed25519.pub helio@IP_DO_SERVIDOR_STREAM
 
 # Permissões de autorização, adicione antes da chave
 nano /home/helio/.ssh/authorized_keys
-command="/usr/local/painelstream/runner.sh",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ..."
+command="/usr/local/painelstream/runner.sh",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ...
 
 # Instalar
 
