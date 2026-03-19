@@ -1,15 +1,15 @@
 # Ciar usuário no servidor
-adduser ps
+adduser painelstream
 
-ssh-copy-id -i ~/.ssh/id_ed25519.pub ps@IP_DO_SERVIDOR_STREAM
+ssh-copy-id -i ~/.ssh/id_ed25519.pub painelstream@IP_DO_SERVIDOR_STREAM
 
-echo 'ps ALL=(ALL) NOPASSWD:ALL' | sudo tee -a /etc/sudoers.d/ps-nopasswd
+echo 'painelstream ALL=(ALL) NOPASSWD:ALL' | sudo tee -a /etc/sudoers.d/painelstream-nopasswd
 
-ssh ps@IP_DO_SERVIDOR_STREAM
+ssh painelstream@IP_DO_SERVIDOR_STREAM
 ssh-keygen
 
 # Permissões de autorização, adicione antes da chave
-nano /home/helio/.ssh/authorized_keys
+nano /home/painelstream/.ssh/authorized_keys
 command="/usr/local/painelstream/runner.sh",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ...
 
 # Instalar

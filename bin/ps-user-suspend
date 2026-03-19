@@ -3,6 +3,9 @@ set -e
 
 USERNAME="$1"
 
+# Includes
+source "/usr/local/painelstream/func/main.sh"
+
 [ -z "$USERNAME" ] && echo '{"status":"error","message":"usuario obrigatorio"}' && exit 1
 [[ ! "$USERNAME" =~ ^[a-z]+$ ]] && echo '{"status":"error","message":"usuario invalido"}' && exit 1
 

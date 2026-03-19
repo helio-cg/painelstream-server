@@ -37,13 +37,14 @@ HOMEDIR="$BASE/$USERNAME"
 #----------------------------------------------------------#
 #                Includes                                  #
 #----------------------------------------------------------#
-[ -z "$USERNAME" ] && echo "usuario obrigatorio" && exit 1
+#[ -z "$USERNAME" ] && echo "usuario obrigatorio" && exit 1
 [ -z "$PASS" ] && echo "senha obrigatoria" && exit 1
 [ -z "$QUOTA_GB" ] && QUOTA_GB="$DEFAULT_QUOTA_GB"
 [ -z "$LISTENERS" ] && LISTENERS="$DEFAULT_LISTENERS"
 
-[[ ! "$USERNAME" =~ ^[a-z]+$ ]] && echo "Usuario invalido, use apenas letras" && exit 1
-id "$USERNAME" &>/dev/null && echo "usuario existe" && exit 1
+validar_usuario "$USERNAME"
+#[[ ! "$USERNAME" =~ ^[a-z]+$ ]] && echo "Usuario invalido, use apenas letras" && exit 1
+#id "$USERNAME" &>/dev/null && echo "usuario existe" && exit 1
 
 if ! getent group "$GROUP" >/dev/null; then
     sudo groupadd "$GROUP"
