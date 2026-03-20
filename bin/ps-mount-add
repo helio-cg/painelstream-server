@@ -20,6 +20,4 @@ DESTINO="/home/$USERNAME/config/mount.xml"
 envsubst < "$TEMPLATE_PATH" > "$DESTINO"
 chmod 660 "$DESTINO"
 
-sudo chown -R $SUSER:$SUSER $DESTINO
-
 exit 0

@@ -7,7 +7,6 @@ DEFAULT_QUOTA_GB=1
 DEFAULT_LISTENERS=50
 SHELL="/usr/sbin/nologin"
 PAINELSTREAM="/usr/local/painelstream"
-SUSER="painelstream"
 
 validar_usuario() {
     local USERNAME="$1"
