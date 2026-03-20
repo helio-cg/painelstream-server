@@ -66,7 +66,7 @@ echo "✅ Prosseguindo com configuração para $DOMAIN..."
 # ==============================
 apt update -y
 apt upgrade -y
-apt install git rsync ca-certificates quota libxml2-utils ufw haproxy certbot -y
+apt install git rsync ca-certificates quota libxml2-utils ufw -y
 # Codec AAC, MP3 e OPUS
 sudo apt install libfdk-aac-dev fdkaac libmp3lame-dev lame libopus0 libopusfile0 libogg0 opus-tools -y
 # Instalação do Icecast2
@@ -98,6 +98,11 @@ sudo ufw allow 8000/tcp
 sudo ufw --force enable
 # Ver estatus e portas
 # sudo ufw status verbose
+
+# Install caddy proxy
+sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.sh' | sudo bash
+sudo apt install -y caddy
 
 # ==============================
 # Habilita Quota
@@ -145,8 +150,6 @@ sudo systemctl enable icecast2
 sudo systemctl start icecast2
 #sudo systemctl reload icecast2
 
-# Inicializa com sistema
-systemctl enable haproxy
 EOF
 
 echo "Cria caminho para executar script de qualquer lugar"
@@ -164,7 +167,7 @@ git clone https://github.com/helio-cg/painelstream-server.git /usr/local/painels
 
 # Atualiza permissão arquivos do sistema
 chmod 600 /usr/local/painelstream/func/main.sh
-chown root:root /usr/local/painelstream/func/main.sh
+chown helio:helio /usr/local/painelstream/func/main.sh
 
 # ==============================
 # Atualiza base xml do Icecast
@@ -174,24 +177,8 @@ sudo cp -f /usr/local/painelstream/templates/icecast-base.xml /etc/icecast2/icec
 # ==============================
 # Configura proxy
 # ==============================
-sudo cp -f /usr/local/painelstream/templates/haproxy.cfg /etc/haproxy/haproxy.cfg
-systemctl restart haproxy
-
-sudo apt install rsyslog -y
-systemctl restart rsyslog
-
-cat > /etc/logrotate.d/haproxy << 'EOF'
-/var/log/haproxy.log {
-    daily
-    rotate 30
-    compress
-    missingok
-    notifempty
-    copytruncate
-}
-EOF
-
-logrotate -d /etc/logrotate.d/haproxy
+sudo /usr/local/painelstream/src/caddy.sh $DOMAIN
+sudo systemctl enable --now caddy
 
 # ==============================
 # Configura acesso SFTP
