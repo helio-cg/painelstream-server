@@ -1,6 +1,6 @@
 <mount>
-    <mount-name>/${USER}</mount-name>
+    <mount-name>/${USERNAME}</mount-name>
     <password>${PASS}</password>
     <max-listeners>${LISTENERS}</max-listeners>
-    <accesslog>${USER}-access.log</accesslog>
+    <accesslog>${USERNAME}-access.log</accesslog>
 </mount>
