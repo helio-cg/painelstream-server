@@ -8,9 +8,7 @@ LISTENERS=$3
 # Includes
 source "/usr/local/painelstream/func/main.sh"
 
-[ -z "$USERNAME" ] && echo "usuario obrigatorio" && exit 1
-[ -z "$PASS" ] && echo "senha obrigatoria" && exit 1
-[ -z "$LISTENERS" ] && echo "numero de ouvintes deve ser informado" && exit 1
+validar_usuario_listeners "$USERNAME" "$PASS" "$LISTENERS"
 
 export USERNAME PASS LISTENERS
 

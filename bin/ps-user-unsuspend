@@ -8,13 +8,7 @@ LISTENERS="$3"
 # Includes
 source "/usr/local/painelstream/func/main.sh"
 
-[ -z "$USERNAME" ] && echo '{"status":"error","message":"usuario obrigatorio"}' && exit 1
-[[ ! "$USERNAME" =~ ^[a-z]+$ ]] && echo '{"status":"error","message":"usuario invalido"}' && exit 1
-
-if ! id "$USERNAME" &>/dev/null; then
-    echo '{"status":"error","message":"usuario nao existe"}'
-    exit 1
-fi
+validar_usuario_listeners "$USERNAME" "$PASS" "$LISTENERS"
 
 sudo usermod -U "$USERNAME"
 sudo usermod -s /bin/bash "$USERNAME"

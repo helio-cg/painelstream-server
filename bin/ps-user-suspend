@@ -6,13 +6,9 @@ USERNAME="$1"
 # Includes
 source "/usr/local/painelstream/func/main.sh"
 
-[ -z "$USERNAME" ] && echo '{"status":"error","message":"usuario obrigatorio"}' && exit 1
-[[ ! "$USERNAME" =~ ^[a-z]+$ ]] && echo '{"status":"error","message":"usuario invalido"}' && exit 1
-
-if ! id "$USERNAME" &>/dev/null; then
-    echo '{"status":"error","message":"usuario nao existe"}'
-    exit 1
-fi
+[[ -z "$USERNAME" ]] && erro "usuario obrigatorio"
+[[ ! "$USERNAME" =~ ^[a-z]{6,10}$ ]] && erro "usuario invalido"
+! id "$USERNAME" &>/dev/null && erro "usuario nao existe"
 
 pkill -u "$USERNAME" 2>/dev/null
 

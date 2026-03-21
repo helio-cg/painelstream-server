@@ -1,5 +1,5 @@
 #!/bin/bash
-# example: add-user user P4$$w@rD 10
+# example: add-user user P4$$w@rD --listeners=100 --quota=5
 
 set -e
 
@@ -10,8 +10,8 @@ set -e
 USERNAME="$1"
 PASS="$2"
 HIDE=2
-QUOTA_GB="$3"
-LISTENERS="$4"
+QUOTA_GB="${3:-1}"
+LISTENERS="${4:-50}"
 
 USER_CREATED=false
 
@@ -37,14 +37,9 @@ HOMEDIR="$BASE/$USERNAME"
 #----------------------------------------------------------#
 #                Includes                                  #
 #----------------------------------------------------------#
-#[ -z "$USERNAME" ] && echo "usuario obrigatorio" && exit 1
-[ -z "$PASS" ] && echo "senha obrigatoria" && exit 1
-[ -z "$QUOTA_GB" ] && QUOTA_GB="$DEFAULT_QUOTA_GB"
-[ -z "$LISTENERS" ] && LISTENERS="$DEFAULT_LISTENERS"
-
-validar_usuario "$USERNAME"
-#[[ ! "$USERNAME" =~ ^[a-z]+$ ]] && echo "Usuario invalido, use apenas letras" && exit 1
-#id "$USERNAME" &>/dev/null && echo "usuario existe" && exit 1
+validar_usuario "$USERNAME" "$PASS"
+[[ "$QUOTA_GB" =~ ^[0-9]+$ ]] || erro "quota invalida"
+[[ "$LISTENERS" =~ ^[0-9]+$ ]] || erro "listeners invalido"
 
 if ! getent group "$GROUP" >/dev/null; then
     sudo groupadd "$GROUP"
@@ -96,11 +91,6 @@ sudo "$PAINELSTREAM/src/icecast-build.sh"
 #----------------------------------------------------------#
 #                Quota                                     #
 #----------------------------------------------------------#
-if ! [[ "$QUOTA_GB" =~ ^[0-9]+$ ]]; then
-    echo "Quota invalida, usando padrao ($DEFAULT_QUOTA_GB GB)"
-    QUOTA_GB="$DEFAULT_QUOTA_GB"
-fi
-
 KB=$((QUOTA_GB * 1024 * 1024))
 sudo setquota -u "$USERNAME" "$KB" "$KB" 0 0 "$FS_MOUNT"
 
@@ -109,5 +99,4 @@ sudo setquota -u "$USERNAME" "$KB" "$KB" 0 0 "$FS_MOUNT"
 #----------------------------------------------------------#
 trap - ERR
 
-echo "{\"status\":\"success\",\"message\":\"Radio criada com sucesso\",\"user\":\"$USERNAME\"}"
-exit 0
+sucesso "Radio criada com sucesso" "{\"user\":\"$USERNAME\"}"

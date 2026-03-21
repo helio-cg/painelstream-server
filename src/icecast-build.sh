@@ -1,73 +1,58 @@
 #!/bin/bash
+set -euo pipefail
 
 BASE="/usr/local/painelstream/templates/icecast-base.xml"
 OUTPUT="/etc/icecast2/icecast.xml"
-LOG="/var/log/icecast-config.log"
+BACKUP="/etc/icecast2/icecast.xml.bak"
 
-TMP=$(mktemp /tmp/icecast.XXXXXX.xml)
-BACKUP=$(mktemp /tmp/icecast_backup.XXXXXX.xml)
+echo "Gerando novo icecast.xml..."
 
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] Iniciando geração do icecast.xml" >> "$LOG"
-
-# Backup atual
+# 🔒 Backup do atual
 cp "$OUTPUT" "$BACKUP"
 
-# Gera novo arquivo
-sed '$d' "$BASE" > "$TMP"
+# 🛠 Gera novo config em arquivo temporário
+TMP_FILE=$(mktemp)
+
+cat "$BASE" > "$TMP_FILE"
 
 for file in /home/*/config/mount.xml; do
-    [ -f "$file" ] && cat "$file" >> "$TMP"
+    if [ -f "$file" ]; then
+        echo "Incluindo $file"
+        cat "$file" >> "$TMP_FILE"
+    fi
 done
 
-echo "</icecast>" >> "$TMP"
+echo "</icecast>" >> "$TMP_FILE"
 
-# Permissões
-chown root:icecast "$TMP"
-chmod 644 "$TMP"
+# 🔐 Permissões antes de mover
+chown root:icecast "$TMP_FILE"
+chmod 644 "$TMP_FILE"
 
-# =========================
-# VALIDAÇÃO
-# =========================
+# 🚀 Substitui config
+mv "$TMP_FILE" "$OUTPUT"
 
-ERROR=""
+echo "Reiniciando Icecast..."
 
-# Validação XML
-if ! xmllint --noout "$TMP" 2>>"$LOG"; then
-    ERROR="Erro de XML inválido"
-fi
-
-# Validação Icecast
-if [ -z "$ERROR" ] && ! icecast2 -t -c "$TMP" 2>>"$LOG"; then
-    ERROR="Erro na configuração do Icecast"
-fi
-
-# =========================
-# DECISÃO FINAL
-# =========================
-
-if [ -z "$ERROR" ]; then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Configuração válida ✔" >> "$LOG"
-
-    xmllint --format "$TMP" -o "$TMP"
-
-    mv "$TMP" "$OUTPUT"
-
-    systemctl reload icecast2
-
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Icecast recarregado com sucesso 🚀" >> "$LOG"
-
-    rm -f "$BACKUP"
-
-    exit 0
+# 🔍 Testa reload
+if systemctl reload icecast2; then
+    echo "Reload OK ✅"
 else
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERRO: $ERROR ❌" >> "$LOG"
+    echo "Erro no reload ❌ tentando restart..."
 
-    # Restaura backup
-    cp "$BACKUP" "$OUTPUT"
+    if systemctl restart icecast2; then
+        echo "Restart OK ✅"
+    else
+        echo "Erro total ❌ restaurando backup..."
 
-    rm -f "$TMP"
-    rm -f "$BACKUP"
+        cp "$BACKUP" "$OUTPUT"
+        chown root:icecast "$OUTPUT"
+        chmod 644 "$OUTPUT"
 
-    echo "Falha: $ERROR"
-    exit 1
+        systemctl restart icecast2
+
+        echo "Backup restaurado e serviço recuperado ✅"
+        exit 1
+    fi
 fi
+
+echo "Concluído!"

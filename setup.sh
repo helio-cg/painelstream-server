@@ -153,7 +153,7 @@ sudo systemctl start icecast2
 EOF
 
 echo "Cria caminho para executar script de qualquer lugar"
-export PATH=$PATH:/usr/local/painelstream/bin
+echo 'export PATH=$PATH:/usr/local/painelstream/bin' | sudo tee /etc/profile.d/painelstream.sh > /dev/null
 
 sudo chmod +x /usr/local/bin/firstboot-quota.sh
 sudo systemctl enable firstboot-quota.service
