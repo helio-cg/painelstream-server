@@ -1,20 +1,64 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+# exemplo: ps-user-unlock USERNAME PASSWORD LISTENERS
 
-USERNAME="$1"
-PASS="$2"
-LISTENERS="$3"
+set -euo pipefail
 
-# Includes
-source "/usr/local/painelstream/func/main.sh"
+# --------------------------
+# Variáveis
+# --------------------------
+USERNAME="${1:-}"
+DEFAULT_SHELL="/usr/sbin/nologin"
 
-validar_usuario_listeners "$USERNAME" "$PASS" "$LISTENERS"
+# --------------------------
+# Funções
+# --------------------------
+erro() { echo "{\"status\":\"error\",\"message\":\"$1\"}" >&2; exit 1; }
+sucesso() { echo "{\"status\":\"success\",\"message\":\"$1\",\"data\":{\"user\":\"$USERNAME\"}}"; exit 0; }
 
+# --------------------------
+# Validações individuais
+# --------------------------
+[[ -z "$USERNAME" ]] && erro "usuario obrigatorio"
+[[ ! "$USERNAME" =~ ^[a-z]{6,10}$ ]] && erro "usuario invalido"
+id "$USERNAME" &>/dev/null || erro "usuario '$USERNAME' nao existe"
+
+# --------------------------
+# Includes e paths
+# --------------------------
+PAINELSTREAM="/usr/local/painelstream"
+SUSPEND_XML="/home/$USERNAME/config/suspend.xml"
+MOUNT_XML="/home/$USERNAME/config/mount.xml"
+
+# --------------------------
+# Verifica se já está desbloqueado
+# --------------------------
+if [[ -f "$MOUNT_XML" ]]; then
+    erro "usuario já está desbloqueado"
+fi
+
+# --------------------------
+# Verifica se existe suspend.xml
+# --------------------------
+[[ ! -f "$SUSPEND_XML" ]] && erro "mount.xml suspenso nao encontrado"
+
+# --------------------------
+# Renomeia suspend.xml para mount.xml
+# --------------------------
+sudo mv "$SUSPEND_XML" "$MOUNT_XML" || erro "falha ao restaurar mount.xml"
+sudo chmod 660 "$MOUNT_XML" || erro "falha ao definir permissao do mount.xml"
+
+# --------------------------
+# Desbloqueia usuário
+# --------------------------
 sudo usermod -U "$USERNAME"
-sudo usermod -s /bin/bash "$USERNAME"
+sudo usermod -s $DEFAULT_SHELL "$USERNAME"
 
-sudo "$PAINELSTREAM/bin/ps-mount-add" "$USERNAME" "$PASS" "$LISTENERS"
+# --------------------------
+# Reload icecast.xml
+# --------------------------
 sudo "$PAINELSTREAM/src/icecast-build.sh" || true
 
-echo "{\"status\":\"success\",\"message\":\"Radio reativada com sucesso\",\"user\":\"$USERNAME\"}"
-exit 0
+# --------------------------
+# Resposta de sucesso
+# --------------------------
+sucesso "Radio desbloqueada com sucesso" "{\"user\":\"$USERNAME\"}"

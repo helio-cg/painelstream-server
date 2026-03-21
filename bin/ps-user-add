@@ -1,61 +1,88 @@
-#!/bin/bash
-# example: add-user user P4$$w@rD --listeners=100 --quota=5
+#!/usr/bin/env bash
+# exemplo: add-user helihdjsh P4ssw0rd 5 50
 
-set -e
+set -euo pipefail
 
-#----------------------------------------------------------#
-#                Variáveis & Funções                       #
-#----------------------------------------------------------#
-
-USERNAME="$1"
-PASS="$2"
+# --------------------------
+# Variáveis
+# --------------------------
+USERNAME="${1:-}"
+PASS="${2:-}"
+QUOTA_GB="${3:-}"
+LISTENERS="${4:-}"
 HIDE=2
-QUOTA_GB="${3:-1}"
-LISTENERS="${4:-50}"
-
 USER_CREATED=false
 
-rollback() {
-    echo "Erro detectado. Executando rollback..." >&2
+# --------------------------
+# Funções
+# --------------------------
+erro() { echo "{\"status\":\"error\",\"message\":\"$1\"}" >&2; exit 1; }
+sucesso() { echo "{\"status\":\"success\",\"message\":\"$1\",\"data\":{\"user\":\"$USERNAME\"}}"; exit 0; }
+is_number() { [[ "$1" =~ ^[0-9]+$ ]]; }
 
+# --------------------------
+# Validações individuais
+# --------------------------
+[[ -z "$USERNAME" ]] && erro "usuario obrigatorio"
+[[ ! "$USERNAME" =~ ^[a-z]{6,10}$ ]] && erro "usuario invalido"
+
+set +e
+id "$USERNAME" &>/dev/null
+[[ $? -eq 0 ]] && erro "usuario ja existe"
+set -e
+
+[[ -z "$PASS" ]] && erro "senha obrigatoria"
+[[ "$PASS" =~ [[:space:]] ]] && erro "senha nao pode conter espacos"
+
+[[ -z "$QUOTA_GB" ]] && erro "quota obrigatoria"
+! is_number "$QUOTA_GB" && erro "quota deve ser um numero inteiro"
+
+[[ -z "$LISTENERS" ]] && erro "listeners obrigatorio"
+! is_number "$LISTENERS" && erro "listeners deve ser um numero inteiro"
+
+# --------------------------
+# Includes e paths
+# --------------------------
+BASE="/home"
+GROUP="radiosftp"
+FS_MOUNT="/"
+DEFAULT_SHELL="/usr/sbin/nologin"
+PAINELSTREAM="/usr/local/painelstream"
+HOMEDIR="$BASE/$USERNAME"
+
+source "$PAINELSTREAM/func/libs/messages.sh"
+source "$PAINELSTREAM/func/libs/logger.sh"
+
+# --------------------------
+# Rollback só para criação do usuário
+# --------------------------
+rollback() {
+    echo "Erro detectado durante criacao do usuario..." >&2
     if [ "$USER_CREATED" = true ]; then
         sudo userdel -r "$USERNAME" 2>/dev/null || true
     fi
-
     echo "{\"status\":\"error\",\"message\":\"Falha na criacao da radio. Rollback executado.\"}"
     exit 1
 }
 
+# --------------------------
+# Criação do grupo e usuário
+# --------------------------
 trap rollback ERR
-
-#----------------------------------------------------------#
-#                Includes                                  #
-#----------------------------------------------------------#
-source "/usr/local/painelstream/func/main.sh"
-HOMEDIR="$BASE/$USERNAME"
-
-#----------------------------------------------------------#
-#                Includes                                  #
-#----------------------------------------------------------#
-validar_usuario "$USERNAME" "$PASS"
-is_number "$QUOTA_GB" || erro "quota invalida"
-is_number "$LISTENERS" || erro "listeners invalido"
 
 if ! getent group "$GROUP" >/dev/null; then
     sudo groupadd "$GROUP"
 fi
 
-#----------------------------------------------------------#
-#                Includes                                  #
-#----------------------------------------------------------#
-sudo /usr/sbin/useradd -m -d "$HOMEDIR" -s $DEFAULT_SHELL -g "$GROUP" "$USERNAME"
+sudo /usr/sbin/useradd -m -d "$HOMEDIR" -s "$DEFAULT_SHELL" -g "$GROUP" "$USERNAME"
 USER_CREATED=true
-
 echo "$USERNAME:$PASS" | sudo chpasswd
 
-#----------------------------------------------------------#
-#               Estrutura de diretórios                    #
-#----------------------------------------------------------#
+trap - ERR  # desativa rollback global após criação do usuário
+
+# --------------------------
+# Estrutura de diretórios
+# --------------------------
 sudo mkdir -p \
     "$HOMEDIR/autodj/Comercial" \
     "$HOMEDIR/autodj/Vinhetas" \
@@ -66,37 +93,37 @@ sudo mkdir -p \
 
 sudo chown root:root "$HOMEDIR"
 sudo chmod 755 "$HOMEDIR"
-
 sudo chown -R "$USERNAME:$GROUP" "$HOMEDIR/autodj"
 sudo chmod -R 775 "$HOMEDIR/autodj"
+sudo chown -R root:root "$HOMEDIR/config" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
+sudo chmod -R 755 "$HOMEDIR/config" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
 
-sudo chown -R root:root \
-    "$HOMEDIR/config" \
-    "$HOMEDIR/logs" \
-    "$HOMEDIR/playlists" \
-    "$HOMEDIR/stats"
+# --------------------------
+# Exporta variáveis para template Mount
+# --------------------------
+export USERNAME PASS LISTENERS
 
-sudo chmod -R 755 \
-    "$HOMEDIR/config" \
-    "$HOMEDIR/logs" \
-    "$HOMEDIR/playlists" \
-    "$HOMEDIR/stats"
+TEMPLATE_PATH="$PAINELSTREAM/templates/mount.tpl"
+DESTINO="$HOMEDIR/config/mount.xml"
 
-#----------------------------------------------------------#
-#                Icecast                                   #
-#----------------------------------------------------------#
-sudo "$PAINELSTREAM/bin/ps-mount-add" "$USERNAME" "$PASS" "$LISTENERS"
-sudo "$PAINELSTREAM/src/icecast-build.sh"
+# --------------------------
+# Gera mount.xml
+# --------------------------
+envsubst < "$TEMPLATE_PATH" > "$DESTINO" || erro "falha ao gerar mount.xml"
+chmod 660 "$DESTINO" || erro "falha ao definir permissao do mount.xml"
 
-#----------------------------------------------------------#
-#                Quota                                     #
-#----------------------------------------------------------#
+# --------------------------
+# Reload icecast.xml
+# --------------------------
+sudo "$PAINELSTREAM/src/icecast-build.sh" || erro "Falha ao buildar Icecast"
+
+# --------------------------
+# Define quota
+# --------------------------
 KB=$((QUOTA_GB * 1024 * 1024))
-sudo setquota -u "$USERNAME" "$KB" "$KB" 0 0 "$FS_MOUNT"
+sudo setquota -u "$USERNAME" "$KB" "$KB" 0 0 "$FS_MOUNT" || erro "Falha ao definir quota"
 
-#----------------------------------------------------------#
-#                        Response                          #
-#----------------------------------------------------------#
-trap - ERR
-
+# --------------------------
+# Resposta de sucesso
+# --------------------------
 sucesso "Radio criada com sucesso" "{\"user\":\"$USERNAME\"}"
