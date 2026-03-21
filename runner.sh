@@ -24,6 +24,8 @@ LISTENERS=50
 # argumentos base (podem não existir dependendo da ação)
 PARAM1="${1:-}"
 PARAM2="${2:-}"
+PARAM3="${3:-}"
+PARAM4="${4:-}"
 shift 2 2>/dev/null || true
 
 # 🔹 função reutilizável de flags
@@ -36,6 +38,8 @@ parse_flags() {
             --listeners=*)
                 LISTENERS="${arg#*=}"
                 ;;
+            --password=*)
+                PASSWORD="${arg#*=}"
         esac
     done
 }
