@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# exemplo: add-user helihdjsh P4ssw0rd 5 50
-
+# exemplo: ps-user-add helihdjsh P4ssw0rd 5 50
 set -euo pipefail
 
 # --------------------------
@@ -12,46 +11,22 @@ QUOTA_GB="${3:-}"
 LISTENERS="${4:-}"
 HIDE=2
 USER_CREATED=false
-
-# --------------------------
-# Funções
-# --------------------------
-erro() { echo "{\"status\":\"error\",\"message\":\"$1\"}" >&2; exit 1; }
-sucesso() { echo "{\"status\":\"success\",\"message\":\"$1\",\"data\":{\"user\":\"$USERNAME\"}}"; exit 0; }
-is_number() { [[ "$1" =~ ^[0-9]+$ ]]; }
-
-# --------------------------
-# Validações individuais
-# --------------------------
-[[ -z "$USERNAME" ]] && erro "usuario obrigatorio"
-[[ ! "$USERNAME" =~ ^[a-z]{6,10}$ ]] && erro "usuario invalido"
-
-set +e
-id "$USERNAME" &>/dev/null
-[[ $? -eq 0 ]] && erro "usuario ja existe"
-set -e
-
-[[ -z "$PASS" ]] && erro "senha obrigatoria"
-[[ "$PASS" =~ [[:space:]] ]] && erro "senha nao pode conter espacos"
-
-[[ -z "$QUOTA_GB" ]] && erro "quota obrigatoria"
-! is_number "$QUOTA_GB" && erro "quota deve ser um numero inteiro"
-
-[[ -z "$LISTENERS" ]] && erro "listeners obrigatorio"
-! is_number "$LISTENERS" && erro "listeners deve ser um numero inteiro"
+HOMEDIR="/home/$USERNAME"
 
 # --------------------------
 # Includes e paths
 # --------------------------
-BASE="/home"
-GROUP="radiosftp"
-FS_MOUNT="/"
-DEFAULT_SHELL="/usr/sbin/nologin"
-PAINELSTREAM="/usr/local/painelstream"
-HOMEDIR="$BASE/$USERNAME"
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$DIR/../func/main.sh"
+source "$DIR/../func/libs/logger.sh"
 
-source "$PAINELSTREAM/func/libs/messages.sh"
-source "$PAINELSTREAM/func/libs/logger.sh"
+# ---------------------------
+# Validação
+# ---------------------------
+is_user_free "$USERNAME" || exit 1
+is_password_valid "$PASS" || exit 1
+validate_quota "$QUOTA_GB" || exit 1
+validate_listeners "$LISTENERS" || exit 1
 
 # --------------------------
 # Rollback só para criação do usuário
@@ -122,6 +97,11 @@ sudo "$PAINELSTREAM/src/icecast-build.sh" || erro "Falha ao buildar Icecast"
 # --------------------------
 KB=$((QUOTA_GB * 1024 * 1024))
 sudo setquota -u "$USERNAME" "$KB" "$KB" 0 0 "$FS_MOUNT" || erro "Falha ao definir quota"
+
+# --------------------------
+# Logs
+# --------------------------
+log_action 'Criar usuário' "$USERNAME"
 
 # --------------------------
 # Resposta de sucesso
