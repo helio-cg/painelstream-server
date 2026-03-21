@@ -38,8 +38,8 @@ HOMEDIR="$BASE/$USERNAME"
 #                Includes                                  #
 #----------------------------------------------------------#
 validar_usuario "$USERNAME" "$PASS"
-[[ "$QUOTA_GB" =~ ^[0-9]+$ ]] || erro "quota invalida"
-[[ "$LISTENERS" =~ ^[0-9]+$ ]] || erro "listeners invalido"
+is_number "$QUOTA_GB" || erro "quota invalida"
+is_number "$LISTENERS" || erro "listeners invalido"
 
 if ! getent group "$GROUP" >/dev/null; then
     sudo groupadd "$GROUP"
