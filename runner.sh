@@ -1,75 +1,111 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-export PATH=$PATH:/usr/sbin:/sbin:/bin:/usr/bin
+export PATH="/usr/sbin:/usr/bin:/sbin:/bin"
 
+# -------------------------
+# JSON OUTPUT
+# -------------------------
 erro() {
     printf '{"status":"error","message":"%s"}\n' "$1"
     exit 1
 }
 
-# Se veio via SSH com command= no authorized_keys
-if [ -n "$SSH_ORIGINAL_COMMAND" ]; then
-    # ⚠️ versão segura (sem eval)
-    read -r -a ARGS <<< "$SSH_ORIGINAL_COMMAND"
-    set -- "${ARGS[@]}"
+sucesso() {
+    printf '{"status":"success","message":"%s"}\n' "$1"
+    exit 0
+}
+
+# -------------------------
+# SSH COMMAND PARSER (SAFE)
+# -------------------------
+if [ -n "${SSH_ORIGINAL_COMMAND:-}" ]; then
+    # Usa eval seguro com set -- (preserva aspas corretamente)
+    eval "set -- $SSH_ORIGINAL_COMMAND"
 fi
 
-ACTION="$1"
+ACTION="${1:-}"
 shift || true
 
-# padrões
+# -------------------------
+# DEFAULTS
+# -------------------------
+USER=""
+PASSWORD=""
 QUOTA_GB=1
 LISTENERS=50
 
-# argumentos base (podem não existir dependendo da ação)
-PARAM1="${1:-}"
-PARAM2="${2:-}"
-PARAM3="${3:-}"
-PARAM4="${4:-}"
-shift 2 2>/dev/null || true
-
-# 🔹 função reutilizável de flags
+# -------------------------
+# FLAGS
+# -------------------------
 parse_flags() {
     for arg in "$@"; do
-        case $arg in
-            --quota=*)
-                QUOTA_GB="${arg#*=}"
+        case "$arg" in
+            --user=*) USER="${arg#*=}" ;;
+            --password=*) PASSWORD="${arg#*=}" ;;
+            --quota=*) QUOTA_GB="${arg#*=}" ;;
+            --listeners=*) LISTENERS="${arg#*=}" ;;
+            *)
+                erro "flag invalida: $arg"
                 ;;
-            --listeners=*)
-                LISTENERS="${arg#*=}"
-                ;;
-            --password=*)
-                PASSWORD="${arg#*=}"
         esac
     done
 }
 
-# aplica flags
 parse_flags "$@"
 
+# -------------------------
+# VALIDAÇÕES
+# -------------------------
+require() {
+    [[ -z "$1" ]] && erro "$2"
+}
+
+is_number() {
+    [[ "$1" =~ ^[0-9]+$ ]]
+}
+
+# -------------------------
+# ACTIONS
+# -------------------------
 case "$ACTION" in
+
     create_user)
-        [[ -z "$PARAM1" ]] && erro "usuario obrigatorio"
-        [[ -z "$PARAM2" ]] && erro "senha obrigatoria"
+        require "$USER" "usuario obrigatorio"
+        require "$PASSWORD" "senha obrigatoria"
+
+        is_number "$QUOTA_GB" || erro "quota invalida"
+        is_number "$LISTENERS" || erro "listeners invalido"
 
         /usr/local/painelstream/bin/ps-user-add \
-            "$PARAM1" "$PARAM2" "$QUOTA_GB" "$LISTENERS"
+            "$USER" "$PASSWORD" "$QUOTA_GB" "$LISTENERS"
+
+        sucesso "usuario criado"
         ;;
+
     update_user)
-        [[ -z "$PARAM1" ]] && erro "usuario obrigatorio"
+        require "$USER" "usuario obrigatorio"
 
-        /usr/local/painelstream/bin/ps-user-update "$PARAM1" "$PARAM2"
+        /usr/local/painelstream/bin/ps-user-update "$USER"
+
+        sucesso "usuario atualizado"
         ;;
+
     change_password)
-        [[ -z "$PARAM1" ]] && erro "usuario obrigatorio"
-        [[ -z "$PARAM2" ]] && erro "nova senha obrigatoria"
+        require "$USER" "usuario obrigatorio"
+        require "$PASSWORD" "nova senha obrigatoria"
 
-        /usr/local/painelstream/bin/ps-user-change-password "$PARAM1" "$PARAM2"
+        /usr/local/painelstream/bin/ps-user-change-password "$USER" "$PASSWORD"
+
+        sucesso "senha alterada"
         ;;
+
     reload_icecast)
         systemctl reload icecast2
+        sucesso "icecast recarregado"
         ;;
+
     *)
-        erro "Invalid action"
+        erro "acao invalida"
         ;;
 esac

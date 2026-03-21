@@ -48,7 +48,7 @@ fi
 #----------------------------------------------------------#
 #                Includes                                  #
 #----------------------------------------------------------#
-sudo /usr/sbin/useradd -m -d "$HOMEDIR" -s /bin/bash -g "$GROUP" "$USERNAME"
+sudo /usr/sbin/useradd -m -d "$HOMEDIR" -s $DEFAULT_SHELL -g "$GROUP" "$USERNAME"
 USER_CREATED=true
 
 echo "$USERNAME:$PASS" | sudo chpasswd

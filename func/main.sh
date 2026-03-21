@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 BASE="/home"
 GROUP="radiosftp"
 FS_MOUNT="/"
-SHELL="/usr/sbin/nologin"
+DEFAULT_SHELL="/usr/sbin/nologin"
 PAINELSTREAM="/usr/local/painelstream"
 
 json() {
@@ -34,24 +35,38 @@ sucesso() {
     exit 0
 }
 
+require() {
+    local VALUE="$1"
+    local MSG="$2"
+
+    [[ -z "$VALUE" ]] && erro "$MSG"
+}
+
+username_valid(){
+    local USERNAME="$1"
+
+    require "$USERNAME" "usuario obrigatorio"
+    [[ ! "$USERNAME" =~ ^[a-z]{6,10}$ ]] && erro "usuario invalido"
+}
+
 validar_usuario() {
     local USERNAME="$1"
     local PASS="$2"
 
-    [[ -z "$USERNAME" ]] && erro "usuario obrigatorio"
-    [[ ! "$USERNAME" =~ ^[a-z]{6,10}$ ]] && erro "usuario invalido"
+    username_valid "$USERNAME"
     id "$USERNAME" &>/dev/null && erro "usuario ja existe"
-    [[ -z "$PASS" ]] && erro "senha obrigatoria"
+    
+    require "$PASS" "senha obrigatoria"
 }
 
 validar_usuario_pass() {
     local USERNAME="$1"
     local PASS="$2"
 
-    [[ -z "$USERNAME" ]] && erro "usuario obrigatorio"
-    [[ ! "$USERNAME" =~ ^[a-z]{6,10}$ ]] && erro "usuario invalido"
+    username_valid "$USERNAME"
     ! id "$USERNAME" &>/dev/null && erro "usuario nao existe"
-    [[ -z "$PASS" ]] && erro "senha obrigatoria"
+
+    require "$PASS" "senha obrigatoria"
 }
 
 validar_usuario_listeners() {
@@ -59,9 +74,10 @@ validar_usuario_listeners() {
     local PASS="$2"
     local LISTENERS="$3"
 
-    [[ -z "$USERNAME" ]] && erro "usuario obrigatorio"
-    [[ ! "$USERNAME" =~ ^[a-z]{6,10}$ ]] && erro "usuario invalido"
+    username_valid "$USERNAME"
     ! id "$USERNAME" &>/dev/null && erro "usuario nao existe"
-    [[ -z "$PASS" ]] && erro "senha obrigatoria"
-    [ -z "$LISTENERS" ] && erro "numero de ouvintes deve ser informado"
+
+    require "$PASS" "senha obrigatoria"
+    
+    [[ -z "$LISTENERS" || ! "$LISTENERS" =~ ^[0-9]+$ ]] && erro "listeners deve ser numero"
 }
