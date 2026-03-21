@@ -30,10 +30,3 @@ sucesso() {
     fi
     exit 0
 }
-
-require() {
-    local VALUE="$1"
-    local MSG="$2"
-
-    [[ -z "$VALUE" ]] && erro "$MSG"
-}
