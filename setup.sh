@@ -94,7 +94,7 @@ liquidsoap --version
 sudo ufw allow ssh
 sudo ufw allow http
 sudo ufw allow https
-sudo ufw allow 8000/tcp
+sudo ufw allow 7998/tcp
 sudo ufw --force enable
 # Ver estatus e portas
 # sudo ufw status verbose
@@ -192,7 +192,7 @@ Subsystem sftp internal-sftp
 
 Match Group radiosftp
     ChrootDirectory /home/%u
-    ForceCommand internal-sftp -d /autodj
+    ForceCommand internal-sftp -d /ftp/pastas
     AllowTcpForwarding no
     X11Forwarding no
 EOF

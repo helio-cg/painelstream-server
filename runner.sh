@@ -14,8 +14,6 @@ PAINELSTREAM="/usr/local/painelstream"
 # -------------------------
 # Carregar libs
 # -------------------------
-source "$PAINELSTREAM/func/libs/messages.sh"
-source "$PAINELSTREAM/func/libs/helpers.sh"
 source "$PAINELSTREAM/func/libs/logger.sh"
 
 # -------------------------

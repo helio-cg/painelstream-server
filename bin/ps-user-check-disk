@@ -1,6 +1,6 @@
 #!/bin/bash
 USERNAME="${1:-}"
-UPLOAD_DIR="/home/$USERNAME/autodj"
+UPLOAD_DIR="/home/$USERNAME/ftp/pastas"
 
 du -sh "$UPLOAD_DIR"
 quota -u "$USERNAME"

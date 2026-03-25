@@ -59,8 +59,8 @@ trap - ERR  # desativa rollback global após criação do usuário
 # Estrutura de diretórios
 # --------------------------
 sudo mkdir -p \
-    "$HOMEDIR/autodj/Comercial" \
-    "$HOMEDIR/autodj/Vinhetas" \
+    "$HOMEDIR/ftp/pastas/Comercial" \
+    "$HOMEDIR/ftp/pastas/Vinhetas" \
     "$HOMEDIR/config" \
     "$HOMEDIR/logs" \
     "$HOMEDIR/playlists" \
@@ -68,8 +68,8 @@ sudo mkdir -p \
 
 sudo chown root:root "$HOMEDIR"
 sudo chmod 755 "$HOMEDIR"
-sudo chown -R "$USERNAME:$GROUP" "$HOMEDIR/autodj"
-sudo chmod -R 775 "$HOMEDIR/autodj"
+sudo chown -R "$USERNAME:$GROUP" "$HOMEDIR/ftp/pastas"
+sudo chmod -R 775 "$HOMEDIR/ftp/pastas"
 sudo chown -R root:root "$HOMEDIR/config" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
 sudo chmod -R 755 "$HOMEDIR/config" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
 

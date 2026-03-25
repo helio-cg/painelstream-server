@@ -22,7 +22,7 @@
     </authentication>
 
     <listen-socket>
-        <port>8000</port>
+        <port>7998</port>
     </listen-socket>
 
     <fileserve>1</fileserve>
