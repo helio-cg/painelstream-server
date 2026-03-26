@@ -61,7 +61,7 @@ trap - ERR  # desativa rollback global após criação do usuário
 sudo mkdir -p \
     "$HOMEDIR/ftp/pastas/Comercial" \
     "$HOMEDIR/ftp/pastas/Vinhetas" \
-    "$HOMEDIR/config" \
+    "$HOMEDIR/configs" \
     "$HOMEDIR/logs" \
     "$HOMEDIR/playlists" \
     "$HOMEDIR/stats"
@@ -70,8 +70,8 @@ sudo chown root:root "$HOMEDIR"
 sudo chmod 755 "$HOMEDIR"
 sudo chown -R "$USERNAME:$GROUP" "$HOMEDIR/ftp/pastas"
 sudo chmod -R 775 "$HOMEDIR/ftp/pastas"
-sudo chown -R root:root "$HOMEDIR/config" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
-sudo chmod -R 755 "$HOMEDIR/config" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
+sudo chown -R root:root "$HOMEDIR/configs" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
+sudo chmod -R 755 "$HOMEDIR/configs" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
 
 # --------------------------
 # Exporta variáveis para template Mount
@@ -79,7 +79,7 @@ sudo chmod -R 755 "$HOMEDIR/config" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMED
 export USERNAME PASS LISTENERS
 
 TEMPLATE_PATH="$PAINELSTREAM/templates/mount.tpl"
-DESTINO="$HOMEDIR/config/mount.xml"
+DESTINO="$HOMEDIR/configs/mount.xml"
 
 # --------------------------
 # Gera mount.xml

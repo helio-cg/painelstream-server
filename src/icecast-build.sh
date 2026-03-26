@@ -15,7 +15,7 @@ TMP_FILE=$(mktemp)
 
 cat "$BASE" > "$TMP_FILE"
 
-for file in /home/*/config/mount.xml; do
+for file in /home/*/configs/mount.xml; do
     if [ -f "$file" ]; then
         echo "Incluindo $file"
         cat "$file" >> "$TMP_FILE"

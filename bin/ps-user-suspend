@@ -34,8 +34,8 @@ pkill -u "$USERNAME" 2>/dev/null || true
 # --------------------------
 # Renomeia mount.xml e rebuild Icecast
 # --------------------------
-MOUNT_XML="/home/$USERNAME/config/mount.xml"
-SUSPEND_XML="/home/$USERNAME/config/suspend.xml"
+MOUNT_XML="/home/$USERNAME/configs/mount.xml"
+SUSPEND_XML="/home/$USERNAME/configs/suspend.xml"
 
 if [[ -f "$MOUNT_XML" ]]; then
     sudo mv "$MOUNT_XML" "$SUSPEND_XML" || erro "falha ao renomear mount.xml"

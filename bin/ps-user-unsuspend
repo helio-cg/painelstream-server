@@ -26,8 +26,8 @@ id "$USERNAME" &>/dev/null || erro "usuario '$USERNAME' nao existe"
 # Includes e paths
 # --------------------------
 PAINELSTREAM="/usr/local/painelstream"
-SUSPEND_XML="/home/$USERNAME/config/suspend.xml"
-MOUNT_XML="/home/$USERNAME/config/mount.xml"
+SUSPEND_XML="/home/$USERNAME/configs/suspend.xml"
+MOUNT_XML="/home/$USERNAME/configs/mount.xml"
 
 # --------------------------
 # Verifica se já está desbloqueado
