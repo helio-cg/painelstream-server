@@ -10,6 +10,15 @@ erro() { echo "{\"status\":\"error\",\"message\":\"$1\"}" >&2; exit 1; }
 sucesso() { echo "{\"status\":\"success\",\"message\":\"$1\",\"data\":{\"user\":\"$USERNAME\"}}"; exit 0; }
 is_number() { [[ "$1" =~ ^[0-9]+$ ]]; }
 
+require() {
+    local value="$1"
+    local message="${2:-Campo obrigatório não informado}"
+
+    if [[ -z "${value:-}" ]]; then
+        erro "$message"
+    fi
+}
+
 is_user_free() {
     local USERNAME="$1"
 
