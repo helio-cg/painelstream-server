@@ -9,22 +9,22 @@ set -euo pipefail
 USERNAME="${1:-}"
 
 # --------------------------
-# Funções
+# Includes e paths
 # --------------------------
-erro() { echo "{\"status\":\"error\",\"message\":\"$1\"}" >&2; exit 1; }
-sucesso() { echo "{\"status\":\"success\",\"message\":\"$1\",\"data\":{\"user\":\"$USERNAME\"}}"; exit 0; }
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$DIR/../func/main.sh"
+source "$DIR/../func/libs/logger.sh"
 
-# --------------------------
-# Validações
-# --------------------------
-[[ -z "$USERNAME" ]] && erro "usuario obrigatorio"
-[[ ! "$USERNAME" =~ ^[a-z]+$ ]] && erro "usuario invalido"
-id "$USERNAME" &>/dev/null || erro "usuario '$USERNAME' nao existe"
+# ---------------------------
+# Validação
+# ---------------------------
+is_user_valid
+
 
 # --------------------------
 # Includes e paths
 # --------------------------
-PAINELSTREAM="/usr/local/painelstream"
+#PAINELSTREAM="/usr/local/painelstream"
 
 # --------------------------
 # Mata processos do usuário

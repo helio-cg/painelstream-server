@@ -7,25 +7,24 @@ set -euo pipefail
 # Variáveis
 # --------------------------
 USERNAME="${1:-}"
-DEFAULT_SHELL="/usr/sbin/nologin"
-
-# --------------------------
-# Funções
-# --------------------------
-erro() { echo "{\"status\":\"error\",\"message\":\"$1\"}" >&2; exit 1; }
-sucesso() { echo "{\"status\":\"success\",\"message\":\"$1\",\"data\":{\"user\":\"$USERNAME\"}}"; exit 0; }
-
-# --------------------------
-# Validações individuais
-# --------------------------
-[[ -z "$USERNAME" ]] && erro "usuario obrigatorio"
-[[ ! "$USERNAME" =~ ^[a-z]{6,10}$ ]] && erro "usuario invalido"
-id "$USERNAME" &>/dev/null || erro "usuario '$USERNAME' nao existe"
+#DEFAULT_SHELL="/usr/sbin/nologin"
 
 # --------------------------
 # Includes e paths
 # --------------------------
-PAINELSTREAM="/usr/local/painelstream"
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$DIR/../func/main.sh"
+source "$DIR/../func/libs/logger.sh"
+
+# ---------------------------
+# Validação
+# ---------------------------
+is_user_valid
+
+# --------------------------
+# Includes e paths
+# --------------------------
+#PAINELSTREAM="/usr/local/painelstream"
 SUSPEND_XML="/home/$USERNAME/configs/suspend.xml"
 MOUNT_XML="/home/$USERNAME/configs/mount.xml"
 

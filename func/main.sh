@@ -3,7 +3,7 @@
 BASE="/home"
 GROUP="radiosftp"
 FS_MOUNT="/"
-DEFAULT_SHELL="/usr/sbin/nologin"
+DEFAULT_SHELL="/usr/sbin/radiosftp"
 PAINELSTREAM="/usr/local/painelstream"
 
 erro() { echo "{\"status\":\"error\",\"message\":\"$1\"}" >&2; exit 1; }
@@ -42,6 +42,19 @@ is_password_valid() {
     #local PASS="$1"
     [[ -z "${PASSWORD:-}" ]] && { erro "Senha obrigatoria"; return 1; }
     [[ "${PASSWORD:-}" =~ [[:space:]] ]] && { erro "senha nao pode conter espacos"; return 1; }
+    return 0
+}
+
+is_user_valid() {
+    [[ -z "$USERNAME" ]] && { erro "usuario obrigatorio"; return 1; }
+    [[ ! "$USERNAME" =~ ^[a-z]{5,10}$ ]] && { erro "usuario invalido"; return 1; }
+
+    id "$USERNAME" &>/dev/null || erro "usuario '$USERNAME' nao existe"
+   # set +e
+   # !id "$USERNAME" &>/dev/null
+   # [[ $? -eq 0 ]] && erro "usuario não existe"
+   # set -e
+
     return 0
 }
 
