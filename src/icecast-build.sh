@@ -5,44 +5,51 @@ BASE="/usr/local/painelstream/templates/icecast-base.xml"
 OUTPUT="/etc/icecast2/icecast.xml"
 BACKUP="/etc/icecast2/icecast.xml.bak"
 
-echo "Gerando novo icecast.xml..."
-
-# 🔒 Backup do atual
+# 🔒 Backup
 cp "$OUTPUT" "$BACKUP"
 
-# 🛠 Gera novo config em arquivo temporário
+# 🛠 Temp file
 TMP_FILE=$(mktemp)
+trap 'rm -f "$TMP_FILE"' EXIT
 
-cat "$BASE" > "$TMP_FILE"
+# 📄 Copia base SEM o fechamento </icecast>
+sed '/<\/icecast>/d' "$BASE" > "$TMP_FILE"
 
+# ➕ Adiciona mounts
 for file in /home/*/configs/mount.xml; do
     if [ -f "$file" ]; then
-        echo "Incluindo $file"
         cat "$file" >> "$TMP_FILE"
     fi
 done
 
+# 🔚 Fecha corretamente
 echo "</icecast>" >> "$TMP_FILE"
 
-# 🔐 Permissões antes de mover
+# 🧪 Validar XML
+if ! xmllint --noout "$TMP_FILE" 2> /tmp/icecast_xml_error.log; then
+    echo "XML inválido ❌" >&2
+    cat /tmp/icecast_xml_error.log >&2
+    exit 1
+fi
+
+# ✨ Formatar XML (opcional mas recomendado)
+xmllint --format "$TMP_FILE" -o "$TMP_FILE"
+
+# 🔐 Permissões
 chown root:icecast "$TMP_FILE"
 chmod 644 "$TMP_FILE"
 
-# 🚀 Substitui config
+# 🚀 Aplicar config
 mv "$TMP_FILE" "$OUTPUT"
 
-echo "Reiniciando Icecast..."
+# 🔁 Reload com fallback
+if ! systemctl reload icecast2; then
 
-# 🔍 Testa reload
-if systemctl reload icecast2; then
-    echo "Reload OK ✅"
-else
-    echo "Erro no reload ❌ tentando restart..."
+    # "Reload falhou ❌ tentando restart..." >&2
 
-    if systemctl restart icecast2; then
-        echo "Restart OK ✅"
-    else
-        echo "Erro total ❌ restaurando backup..."
+    if ! systemctl restart icecast2; then
+       
+       # echo "Erro total ❌ restaurando backup..." >&2
 
         cp "$BACKUP" "$OUTPUT"
         chown root:icecast "$OUTPUT"
@@ -50,9 +57,6 @@ else
 
         systemctl restart icecast2
 
-        echo "Backup restaurado e serviço recuperado ✅"
         exit 1
     fi
 fi
-
-echo "Concluído!"

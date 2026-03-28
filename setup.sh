@@ -167,7 +167,7 @@ git clone https://github.com/helio-cg/painelstream-server.git /usr/local/painels
 
 # Atualiza permissão arquivos do sistema
 chmod 600 /usr/local/painelstream/func/main.sh
-chown helio:helio /usr/local/painelstream/func/main.sh
+chown root:root /usr/local/painelstream/func/main.sh
 
 # ==============================
 # Atualiza base xml do Icecast
