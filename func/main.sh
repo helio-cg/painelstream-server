@@ -20,7 +20,7 @@ require() {
 }
 
 is_user_free() {
-    local USERNAME="$1"
+    #local USERNAME="$1"
 
     [[ -z "$USERNAME" ]] && { erro "usuario obrigatorio"; return 1; }
     [[ ! "$USERNAME" =~ ^[a-z]{5,10}$ ]] && { erro "usuario invalido"; return 1; }
@@ -39,20 +39,17 @@ is_user_free() {
 }
 
 is_password_valid() {
-    local PASS="$1"
-    [[ -z "$PASS" ]] && { erro "senha obrigatoria"; return 1; }
-    [[ "$PASS" =~ [[:space:]] ]] && { erro "senha nao pode conter espacos"; return 1; }
+    #local PASS="$1"
+    [[ -z "${PASSWORD:-}" ]] && { erro "Senha obrigatoria"; return 1; }
+    [[ "${PASSWORD:-}" =~ [[:space:]] ]] && { erro "senha nao pode conter espacos"; return 1; }
     return 0
 }
 
 validate_quota() {
-    local QUOTA_GB="$1"
+    #local QUOTA_GB="$1"
 
-    # obrigatório
-    if [[ -z "$QUOTA_GB" ]]; then
-        erro "quota obrigatoria"
-        return 1
-    fi
+[[ -z "${QUOTA_GB:-}" ]] && { erro "quota obrigatoria"; return 1; }
+
 
     # deve ser inteiro
     if ! is_number "$QUOTA_GB"; then
@@ -64,13 +61,10 @@ validate_quota() {
 }
 
 validate_listeners() {
-    local LISTENERS="$1"
+    #local LISTENERS="$1"
 
-    # obrigatório
-    if [[ -z "$LISTENERS" ]]; then
-        erro "listeners obrigatorio"
-        return 1
-    fi
+[[ -z "${LISTENERS:-}" ]] && { erro "listeners obrigatoria"; return 1; }
+
 
     # deve ser número inteiro
     if ! is_number "$LISTENERS"; then

@@ -4,38 +4,35 @@ CMD_USER_LOADED=1
 
 cmd_user() {
     local ACTION="$1"
-    shift || true
-
-    parse_flags "$@"
 
     case "$ACTION" in
         create_user)
-            is_user_free "$USER" "usuario obrigatorio"
-            is_password_valid "$PASSWORD" "senha obrigatoria"
-            validate_quota "$QUOTA_GB" || erro "quota invalida"
-            validate_listeners "$LISTENERS" || erro "listeners invalido"
+            is_user_free
+            is_password_valid
+            validate_quota
+            validate_listeners
 
-            /usr/local/painelstream/bin/ps-user-add "$USER" "$PASSWORD" "$QUOTA_GB" "$LISTENERS"
-            log_action "create_user" "$USER"
-            sucesso "usuario criado"
+            /usr/local/painelstream/bin/ps-user-add "$USERNAME" "$PASSWORD" "$QUOTA_GB" "$LISTENERS"
+           # log_action "create_user" "$USERNAME"
+          #  sucesso "usuario criado"
             ;;
         update_user)
-            require "$USER" "usuario obrigatorio"
+            require "$USERNAME" "usuario obrigatorio"
 
-            # Opcional: verificar se o usuário realmente existe antes de atualizar
-            if ! getent passwd "$USER" > /dev/null; then
-                erro "usuario $USER nao encontrado"
+            if ! getent passwd "$USERNAME" > /dev/null; then
+                erro "usuario $USERNAME nao encontrado"
             fi
             
-            /usr/local/painelstream/bin/ps-user-update "$USER"
-            log_action "update_user" "$USER"
+            /usr/local/painelstream/bin/ps-user-update "$USERNAME"
+            log_action "update_user" "$USERNAME"
             sucesso "usuario atualizado"
             ;;
         change_password)
-            require "$USER" "usuario obrigatorio"
+            require "$USERNAME" "usuario obrigatorio"
             is_password_valid "$PASSWORD" "nova senha obrigatoria"
-            /usr/local/painelstream/bin/ps-user-change-password "$USER" "$PASSWORD"
-            log_action "change_password" "$USER"
+
+            /usr/local/painelstream/bin/ps-user-change-password "$USERNAME" "$PASSWORD"
+            log_action "change_password" "$USERNAME"
             sucesso "senha alterada"
             ;;
         *)

@@ -6,7 +6,7 @@ set -euo pipefail
 # Variáveis
 # --------------------------
 USERNAME="${1:-}"
-PASS="${2:-}"
+PASSWORD="${2:-}"
 QUOTA_GB="${3:-}"
 LISTENERS="${4:-}"
 HIDE=2
@@ -23,10 +23,10 @@ source "$DIR/../func/libs/logger.sh"
 # ---------------------------
 # Validação
 # ---------------------------
-is_user_free "$USERNAME" || exit 1
-is_password_valid "$PASS" || exit 1
-validate_quota "$QUOTA_GB" || exit 1
-validate_listeners "$LISTENERS" || exit 1
+is_user_free
+is_password_valid
+validate_quota
+validate_listeners
 
 # --------------------------
 # Rollback só para criação do usuário
@@ -51,7 +51,7 @@ fi
 
 sudo /usr/sbin/useradd -m -d "$HOMEDIR" -s "$DEFAULT_SHELL" -g "$GROUP" "$USERNAME"
 USER_CREATED=true
-echo "$USERNAME:$PASS" | sudo chpasswd
+echo "$USERNAME:$PASSWORD" | sudo chpasswd
 
 trap - ERR  # desativa rollback global após criação do usuário
 
@@ -76,7 +76,7 @@ sudo chmod -R 755 "$HOMEDIR/configs" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOME
 # --------------------------
 # Exporta variáveis para template Mount
 # --------------------------
-export USERNAME PASS LISTENERS
+export USERNAME PASSWORD LISTENERS
 
 TEMPLATE_PATH="$PAINELSTREAM/templates/mount.tpl"
 DESTINO="$HOMEDIR/configs/mount.xml"

@@ -16,6 +16,7 @@ PAINELSTREAM="/usr/local/painelstream"
 # -------------------------
 source "$PAINELSTREAM/func/main.sh"
 source "$PAINELSTREAM/func/libs/logger.sh"
+source "$PAINELSTREAM/func/libs/parse_flags.sh"
 
 # -------------------------
 # Carregar comandos
@@ -30,22 +31,33 @@ source "$PAINELSTREAM/commands/icecast.sh"
 ACTION="${1:-}"
 shift || true
 
+[ -z "$ACTION" ] && erro "acao obrigatoria"
+
 # -------------------------
 # Defaults
 # -------------------------
-USER=""
-PASSWORD=""
-QUOTA_GB=1
-LISTENERS=50
+#PS_USER=""
+#PASSWORD=""
+#QUOTA_GB=1
+#LISTENERS=50
 
+# parse global (APENAS AQUI)
 parse_flags "$@"
 
 # -------------------------
 # Dispatch
 # -------------------------
 case "$ACTION" in
-    create_user|update_user|change_password) cmd_user "$ACTION" "$@" ;;
-    create_playlist|update_playlist) cmd_playlist "$ACTION" "$@" ;;
-    reload_icecast) cmd_icecast_reload ;;
-    *) erro "acao invalida" ;;
+    create_user|update_user|change_password)
+        cmd_user "$ACTION"
+        ;;
+    create_playlist|update_playlist)
+        cmd_playlist "$ACTION"
+        ;;
+    reload_icecast)
+        cmd_icecast_reload
+        ;;
+    *)
+        erro "acao invalida"
+        ;;
 esac
