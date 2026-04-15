@@ -100,9 +100,11 @@ sudo ufw --force enable
 # sudo ufw status verbose
 
 # Install caddy proxy
-sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.sh' | sudo bash
-sudo apt install -y caddy
+#sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
+#curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.sh' | sudo bash
+#sudo apt install -y caddy
+sudo apt install -y nginx
+sudo systemctl enable --now nginx
 
 # ==============================
 # Habilita Quota
@@ -177,8 +179,8 @@ sudo cp -f /usr/local/painelstream/templates/icecast-base.xml /etc/icecast2/icec
 # ==============================
 # Configura proxy
 # ==============================
-sudo /usr/local/painelstream/src/caddy.sh $DOMAIN
-sudo systemctl enable --now caddy
+#sudo /usr/local/painelstream/src/caddy.sh $DOMAIN
+#sudo systemctl enable --now caddy
 
 # ==============================
 # Configura acesso SFTP
