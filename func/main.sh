@@ -3,7 +3,7 @@
 BASE="/home"
 GROUP="radiosftp"
 FS_MOUNT="/"
-DEFAULT_SHELL="/usr/sbin/radiosftp"
+DEFAULT_SHELL="/usr/sbin/nologin"
 PAINELSTREAM="/usr/local/painelstream"
 
 erro() { echo "{\"status\":\"error\",\"message\":\"$1\"}" >&2; exit 1; }

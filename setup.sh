@@ -189,9 +189,17 @@ groupadd radiosftp
 getent group radiosftp
 
 # Arquivo de configuralçao do grupo sftp
-cat > /etc/ssh/sshd_config.d/radiosftp.conf <<EOF
-Subsystem sftp internal-sftp
+#cat > /etc/ssh/sshd_config.d/radiosftp.conf <<EOF
+#Subsystem sftp internal-sftp
 
+#Match Group radiosftp
+#    ChrootDirectory /home/%u
+#    ForceCommand internal-sftp -d /ftp/pastas
+#    AllowTcpForwarding no
+#    X11Forwarding no
+#EOF
+
+cat > /etc/ssh/sshd_config.d/radiosftp.conf <<EOF
 Match Group radiosftp
     ChrootDirectory /home/%u
     ForceCommand internal-sftp -d /ftp/pastas
