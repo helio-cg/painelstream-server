@@ -1,34 +1,51 @@
 #!/usr/bin/env python3
-import os
 import sys
-import base64
+import os
+import json
+import time
 
-def main(username, pasta):
-    # Define o caminho do arquivo
-    filename = f"/usr/local/hestia/data/users/{username}/music/{pasta}.conf"
+from verifica_data import verificar
 
-    # Decodifica a pasta
-    decoded_pasta = base64.b64decode(pasta).decode('utf-8').strip()
 
-    # Define o diretório
-    dir_path = f"/home/{username}/ftp/pastas/{decoded_pasta}"
+def main(user, pasta_b64):
 
-    # Obtém os tempos de modificação
-    dirtime = os.path.getmtime(dir_path) if os.path.exists(dir_path) else None
-    filetime = os.path.getmtime(filename) if os.path.exists(filename) else None
+    result = verificar(user, pasta_b64)
 
-    if dirtime is not None and filetime is not None:
-        if dirtime > filetime:
-            print("atualize")
-        else:
-            print("nao-atualize")
-    elif dirtime is not None and filetime is None:
-        print("atualize")
-    else:
-        print("nao-existe")
+    print(json.dumps(result))
+
+    if result.get("status") == "atualize":
+
+        folder_id = result.get("id")
+        fingerprint = result.get("fingerprint")
+
+        if not folder_id or not fingerprint:
+            print(json.dumps({"error": "dados inválidos"}))
+            return
+
+        conf_path = f"/home/{user}/cache/{folder_id}.json"
+
+        try:
+            os.makedirs(os.path.dirname(conf_path), exist_ok=True)
+
+            tmp = conf_path + ".tmp"
+
+            with open(tmp, "w") as f:
+                json.dump({
+                    "fingerprint": fingerprint,
+                    "updated_at": int(time.time())
+                }, f)
+
+            os.replace(tmp, conf_path)
+
+            print(json.dumps({"conf": "atualizado"}))
+
+        except Exception as e:
+            print(json.dumps({"erro_conf": str(e)}))
+
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Uso: verifica-data.py <username> <pasta>")
-    else:
-        main(sys.argv[1], sys.argv[2])
+    if len(sys.argv) < 3:
+        print("Uso: change-verify.py <user> <pasta_base64>")
+        sys.exit(1)
+
+    main(sys.argv[1], sys.argv[2])
