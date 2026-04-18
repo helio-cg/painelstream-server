@@ -1,12 +1,5 @@
-# Ciar usuário no servidor
-adduser painelstream
+- gerar json de musicas (a de pastas já está ok) 17/04/2026
 
-ssh-copy-id -i ~/.ssh/id_ed25519.pub painelstream@IP_DO_SERVIDOR_STREAM
-
-echo 'painelstream ALL=(ALL) NOPASSWD:ALL' | sudo tee -a /etc/sudoers.d/painelstream-nopasswd
-
-ssh painelstream@IP_DO_SERVIDOR_STREAM
-ssh-keygen
 
 # Permissões de autorização, adicione antes da chave
 nano /home/painelstream/.ssh/authorized_keys

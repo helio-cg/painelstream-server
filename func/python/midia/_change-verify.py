@@ -4,7 +4,7 @@ import os
 import json
 import time
 
-from verifica_data import verificar
+from func.python.midia._verifica_data import verificar
 
 
 def main(user, pasta_b64):

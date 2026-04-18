@@ -6,7 +6,7 @@ import base64
 import subprocess
 import json
 
-from utils import remover_caracteres
+from func.python.midia._utils import remover_caracteres
 
 
 # ----------------------------

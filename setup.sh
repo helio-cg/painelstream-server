@@ -95,6 +95,7 @@ sudo ufw allow ssh
 sudo ufw allow http
 sudo ufw allow https
 sudo ufw allow 7998/tcp
+sudo ufw allow 2087/tcp # Porta de administração do MinIO
 sudo ufw --force enable
 # Ver estatus e portas
 # sudo ufw status verbose
@@ -105,6 +106,11 @@ sudo ufw --force enable
 #sudo apt install -y caddy
 sudo apt install -y nginx
 sudo systemctl enable --now nginx
+
+# ==============================
+# Instaklação do MinIO para gerenciamento de arquivos
+# ==============================
+sudo ./setup/file-manager.sh
 
 # ==============================
 # Habilita Quota

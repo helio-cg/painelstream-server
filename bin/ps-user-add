@@ -49,7 +49,8 @@ if ! getent group "$GROUP" >/dev/null; then
     sudo groupadd "$GROUP"
 fi
 
-sudo /usr/sbin/useradd -m -d "$HOMEDIR" -s "$DEFAULT_SHELL" -g "$GROUP" "$USERNAME"
+#sudo /usr/sbin/useradd -m -d "$HOMEDIR" -s "$DEFAULT_SHELL" -g "$GROUP" "$USERNAME"
+sudo useradd -m -d "$HOMEDIR" -s /usr/sbin/nologin -g "$GROUP" "$USERNAME"
 USER_CREATED=true
 echo "$USERNAME:$PASSWORD" | sudo chpasswd
 
@@ -59,8 +60,10 @@ trap - ERR  # desativa rollback global após criação do usuário
 # Estrutura de diretórios
 # --------------------------
 sudo mkdir -p \
-    "$HOMEDIR/ftp/pastas/Comercial" \
-    "$HOMEDIR/ftp/pastas/Vinhetas" \
+    #"$HOMEDIR/ftp/pastas/Comercial" \
+    #"$HOMEDIR/ftp/pastas/Vinhetas" \
+    "/storage/Comercial" \
+    "/storage/Vinhetas" \
     "$HOMEDIR/configs" \
     "$HOMEDIR/logs" \
     "$HOMEDIR/playlists" \
@@ -68,10 +71,26 @@ sudo mkdir -p \
 
 sudo chown root:root "$HOMEDIR"
 sudo chmod 755 "$HOMEDIR"
-sudo chown -R "$USERNAME:$GROUP" "$HOMEDIR/ftp/pastas"
-sudo chmod -R 775 "$HOMEDIR/ftp/pastas"
+#sudo chown -R "$USERNAME:$GROUP" "$HOMEDIR/ftp/pastas"
+#sudo chmod -R 775 "$HOMEDIR/ftp/pastas"
 sudo chown -R root:root "$HOMEDIR/configs" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
 sudo chmod -R 755 "$HOMEDIR/configs" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
+
+# Criação do usuário no MinIO
+mc admin user add local $USERNAME $PASSWORD
+
+# --------------------------
+# Exporta variáveis para template policy-minio.tpl
+# --------------------------
+export USERNAME 
+TEMPLATE_PATH="$PAINELSTREAM/templates/policy-minio.tpl"
+DESTINO="$HOMEDIR/configs/policy-minio.json"
+envsubst < "$TEMPLATE_PATH" > "$DESTINO" || erro "falha ao gerar policy-minio.json"
+chmod 660 "$DESTINO" || erro "falha ao definir permissao do policy-minio.json"
+
+mc admin policy create local $USERNAME-policy $DESTINO
+mc admin policy attach local $USERNAME-policy --user $USERNAME
+mc alias set $USERNAME http://localhost:9000 $USERNAME $PASSWORD
 
 # --------------------------
 # Exporta variáveis para template Mount

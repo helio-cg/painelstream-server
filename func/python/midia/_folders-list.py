@@ -5,7 +5,7 @@ import sys
 import re
 import base64
 
-from verifica_data import verificar
+from func.python.midia._verifica_data import verificar
 
 BASE_TEMPLATE = "/home/{user}/ftp/pastas"
 OUTPUT_JSON = "/home/{user}/cache/folders.json"
