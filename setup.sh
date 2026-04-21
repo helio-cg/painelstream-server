@@ -83,8 +83,8 @@ sudo ufw allow ssh
 sudo ufw allow http
 sudo ufw allow https
 sudo ufw allow 7998/tcp
-#sudo ufw allow 2086/tcp # Porta de administração do MinIO
-#sudo ufw allow 2087/tcp # Porta de administração do MinIO
+sudo ufw allow 9000/tcp # Porta de administração do MinIO
+sudo ufw allow 9001/tcp # Porta de administração do MinIO
 sudo ufw --force enable
 sudo ufw reload
 # Ver estatus e portas
