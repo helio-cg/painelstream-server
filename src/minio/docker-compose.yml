@@ -3,28 +3,30 @@ services:
     image: minio/minio
     container_name: minio
     ports:
-      - "2086:2086"
-      - "2087:2087" # Porta para o console de administração
+      - "2086:9000"
+      - "2087:9001" # Porta para o console de administração
     environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: password123
-    command: server /data --console-address ":2087"
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
     volumes:
       - /storage:/data
+    restart: unless-stopped
 
   app:
     build: .
     container_name: node_app
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000" # Porta interna do container
     depends_on:
       - minio
     environment:
       MINIO_ENDPOINT: minio
-      MINIO_PORT: 2086
-      MINIO_ACCESS_KEY: admin
-      MINIO_SECRET_KEY: password123
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET: music-bucket
+    restart: unless-stopped
 
 volumes:
   minio_data:
