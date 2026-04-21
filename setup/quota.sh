@@ -74,3 +74,20 @@ sudo systemctl enable firstboot-quota.service
 #quotacheck -cum "$MOUNT"
 #sudo mount -o remount "$MOUNT"
 #sudo repquota -a # Ver cota de usuários
+
+# ==============================
+# Configura acesso SFTP
+# ==============================
+groupadd radiosftp
+getent group radiosftp
+
+# Arquivo de configuralçao do grupo sftp
+cat > /etc/ssh/sshd_config.d/radiosftp.conf <<EOF
+Match Group radiosftp
+    ChrootDirectory /home/%u
+    ForceCommand internal-sftp -d /ftp/pastas
+    AllowTcpForwarding no
+    X11Forwarding no
+EOF
+
+systemctl restart sshd

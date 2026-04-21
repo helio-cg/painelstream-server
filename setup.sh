@@ -10,8 +10,6 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-
-
 # ==============================
 # DOMÍNIO (ARGUMENTO OU INPUT)
 # ==============================
@@ -104,22 +102,7 @@ chown root:root /usr/local/painelstream/func/main.sh
 # ==============================
 sudo cp -f /usr/local/painelstream/templates/icecast-base.xml /etc/icecast2/icecast.xml
 
-# ==============================
-# Configura acesso SFTP
-# ==============================
-groupadd radiosftp
-getent group radiosftp
 
-# Arquivo de configuralçao do grupo sftp
-cat > /etc/ssh/sshd_config.d/radiosftp.conf <<EOF
-Match Group radiosftp
-    ChrootDirectory /home/%u
-    ForceCommand internal-sftp -d /ftp/pastas
-    AllowTcpForwarding no
-    X11Forwarding no
-EOF
-
-systemctl restart ssh
 
 echo "Instalação concluida"
 echo "Desative usuário root e acesso ssh com senha"
