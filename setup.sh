@@ -100,7 +100,7 @@ $BASE_DIR/setup/docker.sh
 $BASE_DIR/setup/file-manager.sh "$DOMAIN"
 
 # Configuração de quota para limitar espaço em disco
-$BASE_DIR/setup/quota.sh "$MOUNT"
+#$BASE_DIR/setup/quota.sh "$MOUNT"
 
 echo "Instalação concluida"
 echo "Desative usuário root e acesso ssh com senha"
