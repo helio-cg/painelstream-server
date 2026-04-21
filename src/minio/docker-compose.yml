@@ -31,12 +31,15 @@ services:
       - "3000:3000"
     depends_on:
       - minio
+      - redis
     environment:
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET: music-bucket
+      #MINIO_BUCKET: music-bucket
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     restart: unless-stopped
     networks:
       - app_net
