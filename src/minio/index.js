@@ -4,10 +4,12 @@ const Minio = require("minio");
 const app = express();
 const port = 3000;
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 const minioClient = new Minio.Client({
   endPoint: process.env.MINIO_ENDPOINT,
   port: parseInt(process.env.MINIO_PORT),
-  useSSL: false,
+  useSSL: true,
   accessKey: process.env.MINIO_ACCESS_KEY,
   secretKey: process.env.MINIO_SECRET_KEY,
 });

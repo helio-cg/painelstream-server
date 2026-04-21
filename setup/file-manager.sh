@@ -1,55 +1,18 @@
-ENV_FILE="/usr/local/painelstream/src/minio/.env"
-
+#!/bin/bash
 if [ "$(id -u)" -ne 0 ]; then
     echo "Este script deve ser executado como root."
     exit 1
 fi
+
+DOMAIN="${1:-}"
+ENV_FILE="/usr/local/painelstream/src/minio/.env"
+
 
 # Local de armazenamento para o MinIO
 if [ ! -d "/storage" ]; then
     sudo mkdir -p /storage
     sudo chown -R $USER:$USER /storage
 fi
-
-# Instalação do Docker e Docker Compose
-if ! command -v docker &> /dev/null; then
-    echo "Docker não encontrado. Instalando Docker..."
-   
-    sudo apt install -y ca-certificates curl gnupg lsb-release
-    sudo mkdir -p /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    
-    sudo apt update
-    sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-    sudo systemctl start docker
-    sudo systemctl enable docker
-    sudo systemctl status docker --no-pager   # deve mostrar active (running)
-
-    sudo usermod -aG docker $USER
-
-    docker --version
-    docker compose version
-
-    echo "Docker instalado com sucesso."
-else
-    echo "Docker já está instalado."
-fi
-
-# Ative restart automático caso o daemon caia
-sudo systemctl enable --now docker
-# (Opcional) Configure o Docker para usar menos log (boa prática em produção)
-sudo tee /etc/docker/daemon.json > /dev/null <<EOF
-{
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "10m",
-    "max-file": "3"
-  }
-}
-EOF
-sudo systemctl restart docker
 
 # Cli minio
 curl https://dl.min.io/client/mc/release/linux-amd64/mc -o mc
@@ -115,72 +78,8 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Configurando alias do MinIO..."
-mc alias set local http://localhost:2086 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+#mc alias set local http://localhost:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+mc alias set local https://$DOMAIN:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" --insecure
 
 echo "Alias configurado com sucesso!"
 mc alias list local
-
-mkdir -p /etc/nginx/sites-available/14.stmip.net.d/
-sudo nano /etc/nginx/sites-available/14.stmip.net.d/node-app.conf
-
-# =============================================
-# NODE APP - Proxy para aplicação Node.js
-# Acessível em: https://14.stmip.net/app/
-# =============================================
-
-location /app/ {
-    proxy_pass http://node_app:3000/;           # Barra final é importante!
-
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-
-    # WebSocket support
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-
-    # Timeouts
-    proxy_read_timeout 300;
-    proxy_send_timeout 300;
-
-    # Tamanho máximo de upload
-    client_max_body_size 50M;
-}
-
-# Redireciona /app (sem barra) para /app/
-location = /app {
-    return 301 /app/;
-}
-
-sudo nano /etc/nginx/sites-available/14.stmip.net.d/minio.conf
-# =============================================
-# MINIO - Proxy para MinIO Console / API
-# =============================================
-
-# Console MinIO (Interface Web)
-location /storage/ {
-    proxy_pass http://minio:9001/;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-
-    proxy_read_timeout 300;
-}
-
-# API S3 (se precisar expor publicamente - use com cuidado)
-# location /minio/ {
-#     proxy_pass http://minio:9000/;
-#     proxy_set_header Host $host;
-#     proxy_set_header X-Real-IP $remote_addr;
-#     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-#     proxy_set_header X-Forwarded-Proto $scheme;
-# }
-
-# Testa a configuração
-sudo nginx -t
-
-# Recarrega o Nginx
-sudo systemctl reload nginx

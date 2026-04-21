@@ -1,5 +1,7 @@
 #!/bin/bash
 
+BASE_DIR='/usr/local/painelstream'
+
 # ==============================
 # VERIFICA SE É ROOT
 # ==============================
@@ -95,64 +97,21 @@ sudo ufw allow ssh
 sudo ufw allow http
 sudo ufw allow https
 sudo ufw allow 7998/tcp
-sudo ufw allow 2086/tcp # Porta de administração do MinIO
-sudo ufw allow 2087/tcp # Porta de administração do MinIO
+#sudo ufw allow 2086/tcp # Porta de administração do MinIO
+#sudo ufw allow 2087/tcp # Porta de administração do MinIO
 sudo ufw --force enable
 sudo ufw reload
 # Ver estatus e portas
 # sudo ufw status verbose
 
-# Install caddy proxy
-#sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
-#curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.sh' | sudo bash
-#sudo apt install -y caddy
-sudo apt install -y nginx
-sudo systemctl enable --now nginx
-sudo systemctl status nginx   # deve mostrar "active (running)"
+# Configura proxy reverso com Nginx
+$BASE_DIR/setup/nginx-install.sh "$DOMAIN"
 
-sudo tee /etc/nginx/sites-available/$DOMAIN > /dev/null <<EOF
-server {
-    listen 80;
-    server_name $DOMAIN;
+# Instalação do Docker e Docker Compose
+$BASE_DIR/setup/docker.sh
 
-    root /usr/local/painelstream/public;
-    index index.html index.htm index.nginx-debian.html;
-
-    location / {
-        try_files \$uri \$uri/ =404;
-    }
-}
-EOF
-
-sudo ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-
-# ==============================
-# Instalação do Certificado (Let's Encrypt)
-# ==============================
-sudo apt install certbot python3-certbot-nginx -y
-echo "=== Obtendo certificado Let's Encrypt para $DOMAIN ==="
-
-sudo certbot --nginx \
-  -d "$DOMAIN" \
-  --non-interactive \
-  --agree-tos \
-  --email "falecom@elicast.app" \
-  --redirect \
-  --no-eff-email
-
-# Verifica se deu certo
-if [ $? -eq 0 ]; then
-    echo "✅ Certificado instalado com sucesso!"
-    sudo certbot renew --dry-run
-else
-    echo "❌ Erro ao obter o certificado."
-fi
-
-# ==============================
-# Instaklação do MinIO para gerenciamento de arquivos
-# ==============================
-sudo ./setup/file-manager.sh
+# Instalação do MinIO para gerenciamento de arquivos
+$BASE_DIR/setup/file-manager.sh "$DOMAIN"
 
 # ==============================
 # Habilita Quota
