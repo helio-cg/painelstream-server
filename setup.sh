@@ -63,6 +63,19 @@ sudo apt install liquidsoap -y
 icecast2 -v
 liquidsoap --version
 
+# Copia arquivos para base
+mkdir /usr/local/painelstream
+git clone https://github.com/helio-cg/painelstream-server.git /usr/local/painelstream
+
+# Atualiza permissão arquivos do sistema
+chmod 600 /usr/local/painelstream/func/main.sh
+chown root:root /usr/local/painelstream/func/main.sh
+
+# ==============================
+# Atualiza base xml do Icecast
+# ==============================
+sudo cp -f /usr/local/painelstream/templates/icecast-base.xml /etc/icecast2/icecast.xml
+
 # ==============================
 # Habilita Firwall
 # ==============================
@@ -88,21 +101,6 @@ $BASE_DIR/setup/file-manager.sh "$DOMAIN"
 
 # Configuração de quota para limitar espaço em disco
 $BASE_DIR/setup/quota.sh "$MOUNT"
-
-# Copia arquivos para base
-mkdir /usr/local/painelstream
-git clone https://github.com/helio-cg/painelstream-server.git /usr/local/painelstream
-
-# Atualiza permissão arquivos do sistema
-chmod 600 /usr/local/painelstream/func/main.sh
-chown root:root /usr/local/painelstream/func/main.sh
-
-# ==============================
-# Atualiza base xml do Icecast
-# ==============================
-sudo cp -f /usr/local/painelstream/templates/icecast-base.xml /etc/icecast2/icecast.xml
-
-
 
 echo "Instalação concluida"
 echo "Desative usuário root e acesso ssh com senha"
