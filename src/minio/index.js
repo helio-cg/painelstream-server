@@ -1,11 +1,31 @@
 const express = require("express");
 const Minio = require("minio");
+const { createClient } = require("redis");
 
 const app = express();
 const port = 3000;
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
+// =============================
+// 🔴 REDIS
+// =============================
+const redisClient = createClient({
+  socket: {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT
+  }
+});
+
+redisClient.on("error", (err) => console.log("Redis Error:", err));
+
+(async () => {
+  await redisClient.connect();
+})();
+
+// =============================
+// 🔧 MINIO
+// =============================
 const minioClient = new Minio.Client({
   endPoint: process.env.MINIO_ENDPOINT,
   port: parseInt(process.env.MINIO_PORT),
@@ -30,6 +50,10 @@ function isMusic(file) {
   return file.match(/\.(mp3|wav|ogg)$/i);
 }
 
+function buildKey(prefix, bucket, path = "") {
+  return `${prefix}:${bucket}:${path || "root"}`;
+}
+
 // =============================
 // 📊 1. INFO COMPLETA DO BUCKET
 // =============================
@@ -38,6 +62,13 @@ app.get("/bucket/:bucket", async (req, res) => {
 
   if (!isValidBucket(bucket)) {
     return res.status(400).json({ error: "Bucket inválido" });
+  }
+
+  const key = buildKey("bucket", bucket);
+
+  const cached = await redisClient.get(key);
+  if (cached) {
+    return res.json({ ...JSON.parse(cached), cache: "redis" });
   }
 
   try {
@@ -87,8 +118,8 @@ app.get("/bucket/:bucket", async (req, res) => {
       }
     });
 
-    stream.on("end", () => {
-      res.json({
+    stream.on("end", async () => {
+      const response = {
         bucket,
         totalFiles,
         totalMp3,
@@ -96,7 +127,11 @@ app.get("/bucket/:bucket", async (req, res) => {
         totalSizeFormatted: formatSize(totalSize),
         folders,
         files,
-      });
+      };
+
+      await redisClient.setEx(key, 60, JSON.stringify(response));
+
+      res.json({ ...response, cache: "miss" });
     });
 
     stream.on("error", (err) => {
@@ -110,13 +145,20 @@ app.get("/bucket/:bucket", async (req, res) => {
 
 
 // =============================
-// 📁 2. LISTAR PASTAS (RAIZ)
+// 📁 2. LISTAR PASTAS
 // =============================
 app.get("/folders/:bucket", async (req, res) => {
   const bucket = req.params.bucket;
 
-  if (!/^[a-z0-9-]+$/.test(bucket)) {
+  if (!isValidBucket(bucket)) {
     return res.status(400).json({ error: "Bucket inválido" });
+  }
+
+  const key = buildKey("folders", bucket);
+
+  const cached = await redisClient.get(key);
+  if (cached) {
+    return res.json({ ...JSON.parse(cached), cache: "redis" });
   }
 
   try {
@@ -137,9 +179,7 @@ app.get("/folders/:bucket", async (req, res) => {
       totalFiles++;
       totalSize += obj.size;
 
-      if (obj.name.match(/\.(mp3|wav|ogg)$/i)) {
-        totalMp3++;
-      }
+      if (isMusic(obj.name)) totalMp3++;
 
       if (!obj.name.includes("/")) return;
 
@@ -156,28 +196,30 @@ app.get("/folders/:bucket", async (req, res) => {
       folders[folder].totalFiles++;
       folders[folder].totalSize += obj.size;
 
-      if (obj.name.match(/\.(mp3|wav|ogg)$/i)) {
+      if (isMusic(obj.name)) {
         folders[folder].totalMp3++;
       }
     });
 
-    stream.on("end", () => {
-
-      // formatar tamanhos
+    stream.on("end", async () => {
       Object.keys(folders).forEach((folder) => {
         folders[folder].totalSizeFormatted =
           (folders[folder].totalSize / 1024 / 1024).toFixed(2) + " MB";
       });
 
-      res.json({
+      const response = {
         bucket,
         totalFiles,
         totalMp3,
         totalSize,
-        totalSizeFormatted: (totalSize / 1024 / 1024).toFixed(2) + " MB",
+        totalSizeFormatted: formatSize(totalSize),
         totalFolders: Object.keys(folders).length,
         folders
-      });
+      };
+
+      await redisClient.setEx(key, 30, JSON.stringify(response));
+
+      res.json({ ...response, cache: "miss" });
     });
 
     stream.on("error", (err) => {
@@ -202,8 +244,14 @@ app.get("/folder/:bucket/*", async (req, res) => {
 
   try {
     const path = decodeURIComponent(req.params[0] || "");
-    const prefix = path ? `${path}/` : "";
+    const key = buildKey("folder", bucket, path);
 
+    const cached = await redisClient.get(key);
+    if (cached) {
+      return res.json({ ...JSON.parse(cached), cache: "redis" });
+    }
+
+    const prefix = path ? `${path}/` : "";
     const stream = minioClient.listObjectsV2(bucket, prefix, true);
 
     let totalSize = 0;
@@ -229,8 +277,8 @@ app.get("/folder/:bucket/*", async (req, res) => {
       }
     });
 
-    stream.on("end", () => {
-      res.json({
+    stream.on("end", async () => {
+      const response = {
         bucket,
         path,
         totalFiles,
@@ -238,7 +286,11 @@ app.get("/folder/:bucket/*", async (req, res) => {
         totalSize,
         totalSizeFormatted: formatSize(totalSize),
         musics
-      });
+      };
+
+      await redisClient.setEx(key, 30, JSON.stringify(response));
+
+      res.json({ ...response, cache: "miss" });
     });
 
     stream.on("error", (err) => {
@@ -261,6 +313,13 @@ app.get("/musics/:bucket/:folder", async (req, res) => {
     return res.status(400).json({ error: "Bucket inválido" });
   }
 
+  const key = buildKey("musics", bucket, folder);
+
+  const cached = await redisClient.get(key);
+  if (cached) {
+    return res.json({ data: JSON.parse(cached), cache: "redis" });
+  }
+
   try {
     const prefix = `${folder}/`;
     const stream = minioClient.listObjectsV2(bucket, prefix, true);
@@ -279,8 +338,9 @@ app.get("/musics/:bucket/:folder", async (req, res) => {
       });
     });
 
-    stream.on("end", () => {
-      res.json(musics);
+    stream.on("end", async () => {
+      await redisClient.setEx(key, 20, JSON.stringify(musics));
+      res.json({ data: musics, cache: "miss" });
     });
 
     stream.on("error", (err) => {
@@ -294,7 +354,7 @@ app.get("/musics/:bucket/:folder", async (req, res) => {
 
 
 // =============================
-// ▶️ 5. PLAY (URL TEMPORÁRIA)
+// ▶️ 5. PLAY
 // =============================
 app.get("/play/:bucket/*", async (req, res) => {
   const bucket = req.params.bucket;
@@ -325,10 +385,26 @@ app.get("/play/:bucket/*", async (req, res) => {
 
 
 // =============================
+// 🧹 LIMPAR CACHE
+// =============================
+app.get("/cache/clear/:bucket", async (req, res) => {
+  const bucket = req.params.bucket;
+
+  const keys = await redisClient.keys(`*:${bucket}:*`);
+
+  if (keys.length) {
+    await redisClient.del(keys);
+  }
+
+  res.json({ message: "Cache limpo", total: keys.length });
+});
+
+
+// =============================
 // 🔍 HEALTH CHECK
 // =============================
 app.get("/", (req, res) => {
-  res.send("API MinIO OK 🚀");
+  res.send("API MinIO + Redis OK 🚀");
 });
 
 

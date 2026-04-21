@@ -19,6 +19,9 @@ curl https://dl.min.io/client/mc/release/linux-amd64/mc -o mc
 chmod +x mc
 sudo mv mc /usr/local/bin/
 
+# Instalação do Redis para o MinIO
+npm install redis
+
 echo "=== Configurando credenciais do MinIO ==="
 # Cria o diretório se não existir
 sudo mkdir -p "$(dirname "$ENV_FILE")"
@@ -37,6 +40,8 @@ if [ ! -f "$ENV_FILE" ]; then
 MINIO_ROOT_USER=${MINIO_ROOT_USER}
 MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
 
+REDIS_HOST=redis
+REDIS_PORT=6379
 # Outras variáveis que você usar no MinIO (adicione aqui)
 # MINIO_DOMAIN=...
 # MINIO_CONSOLE_ADDRESS=":9001"
@@ -83,3 +88,4 @@ mc alias set local https://$DOMAIN:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD
 
 echo "Alias configurado com sucesso!"
 mc alias list local
+
