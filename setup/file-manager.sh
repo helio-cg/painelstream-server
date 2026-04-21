@@ -1,8 +1,4 @@
 #!/bin/bash
-if [ "$(id -u)" -ne 0 ]; then
-    echo "Este script deve ser executado como root."
-    exit 1
-fi
 
 DOMAIN="${1:-}"
 ENV_FILE="/usr/local/painelstream/src/minio/.env"
