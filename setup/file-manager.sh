@@ -80,7 +80,7 @@ fi
 
 echo "Configurando alias do MinIO..."
 #mc alias set local http://localhost:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
-mc alias set local https://$DOMAIN:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" --insecure
+mc alias set local http://$DOMAIN:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" --insecure
 
 echo "Alias configurado com sucesso!"
 mc alias list local
