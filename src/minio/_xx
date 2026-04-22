@@ -1,0 +1,89 @@
+version: '3.9'
+
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "81:80"     # HTTP interno (Nginx vai redirecionar para cá)
+      - "444:443"   # HTTPS interno (Nginx vai redirecionar para cá)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-data:/letsencrypt
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Não usamos Let's Encrypt aqui (você já usa no Nginx)
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_SERVER_URL: https://minio.seudominio.com
+      MINIO_BROWSER_REDIRECT_URL: https://console.seudominio.com
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+    networks:
+      - app_net
+    labels:
+      - "traefik.enable=true"
+      # API S3
+      - "traefik.http.routers.minio.rule=Host(`minio.seudominio.com`)"
+      - "traefik.http.routers.minio.entrypoints=websecure"
+      - "traefik.http.services.minio.loadbalancer.server.port=9000"
+      # Console
+      - "traefik.http.routers.minio-console.rule=Host(`console.seudominio.com`)"
+      - "traefik.http.routers.minio-console.entrypoints=websecure"
+      - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - app_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  app:
+    build: .
+    container_name: node_app
+    depends_on:
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    environment:
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    restart: unless-stopped
+    networks:
+      - app_net
+    # ← Aqui você pode adicionar labels do Traefik depois se quiser expor a app via https://app.seudominio.com
+
+networks:
+  app_net:
+    driver: bridge
+
+volumes:
+  minio_data:
+  redis_data:
+  traefik-data:

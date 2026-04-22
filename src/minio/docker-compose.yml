@@ -8,9 +8,15 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    command: server /data --console-address ":9001"
+      MINIO_SERVER_URL: https://minio.seudominio.com:9000
+      MINIO_BROWSER_REDIRECT_URL: https://minio.seudominio.com:9001
+    command: server /data 
+      --address ":9000"
+      --console-address ":9001"
+      --certs-dir /root/.minio/certs
     volumes:
       - /storage:/data
+      - /storage/minio-certs:/root/.minio/certs:ro   # <-- Monte os certificados aqui
     restart: unless-stopped
     networks:
       - app_net

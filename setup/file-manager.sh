@@ -29,13 +29,16 @@ if [ ! -f "$ENV_FILE" ]; then
     # Gera senha forte de 32 caracteres (pode mudar para 24 ou 40)
     MINIO_ROOT_USER="minioadmin"  # ou o que você preferir
     MINIO_ROOT_PASSWORD=$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 32)
+    MINIO_SERVER_URL="https://$DOMAIN:9000"  # Substitua pelo seu domínio
+    MINIO_BROWSER_REDIRECT_URL="https://$DOMAIN:9001"
 
     # Cria o arquivo com as variáveis
     sudo tee "$ENV_FILE" > /dev/null <<EOF
 # Credenciais MinIO - Gerado automaticamente em $(date)
 MINIO_ROOT_USER=${MINIO_ROOT_USER}
 MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
-
+MINIO_SERVER_URL=${MINIO_SERVER_URL}
+MINIO_BROWSER_REDIRECT_URL=${MINIO_BROWSER_REDIRECT_URL}
 REDIS_HOST=redis
 REDIS_PORT=6379
 # Outras variáveis que você usar no MinIO (adicione aqui)
@@ -85,3 +88,11 @@ mc alias set local http://localhost:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWOR
 echo "Alias configurado com sucesso!"
 mc alias list local
 
+# Script de renovação automática dos certificados (exemplo usando certbot) 
+#!/bin/bash
+#DOMAIN="minio.seudominio.com"
+#cp /etc/letsencrypt/live/$DOMAIN/fullchain.pem /storage/minio-certs/public.crt
+#cp /etc/letsencrypt/live/$DOMAIN/privkey.pem   /storage/minio-certs/private.key
+#chmod 600 /storage/minio-certs/private.key
+#chmod 644 /storage/minio-certs/public.crt
+#docker compose -f /caminho/para/seu/docker-compose.yml restart minio
