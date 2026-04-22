@@ -114,8 +114,8 @@ sudo "$PAINELSTREAM/src/icecast-build.sh" || erro "Falha ao buildar Icecast"
 # --------------------------
 # Define quota
 # --------------------------
-KB=$((QUOTA_GB * 1024 * 1024))
-sudo setquota -u "$USERNAME" "$KB" "$KB" 0 0 "$FS_MOUNT" || erro "Falha ao definir quota"
+#KB=$((QUOTA_GB * 1024 * 1024))
+#sudo setquota -u "$USERNAME" "$KB" "$KB" 0 0 "$FS_MOUNT" || erro "Falha ao definir quota"
 
 # --------------------------
 # Logs

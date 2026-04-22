@@ -15,6 +15,9 @@ trap 'rm -f "$TMP_FILE"' EXIT
 # 📄 Copia base SEM o fechamento </icecast>
 sed '/<\/icecast>/d' "$BASE" > "$TMP_FILE"
 
+# evita erro se não houver arquivos
+shopt -s nullglob
+
 # ➕ Adiciona mounts
 for file in /home/*/configs/mount.xml; do
     if [ -f "$file" ]; then
