@@ -3,12 +3,11 @@ services:
     image: minio/minio
     container_name: minio
     ports:
-      - "127.0.0.1:9000:9000"
-      - "127.0.0.1:9001:9001"
+      - "9000:9000"
+      - "9001:9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MINIO_SERVER_URL: https://storage14.stmip.net
     command: server /data --console-address ":9001"
     volumes:
       - /storage:/data

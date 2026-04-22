@@ -79,8 +79,8 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Configurando alias do MinIO..."
-#mc alias set local http://localhost:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
-mc alias set local https://storage14.stmip.net "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+mc alias set local http://localhost:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+#mc alias set local https://14.stmip.net:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
 
 echo "Alias configurado com sucesso!"
 mc alias list local
