@@ -11,7 +11,7 @@ if [ ! -d "/storage" ]; then
 fi
 
 # Cli minio
-curl https://dl.min.io/client/mc/release/linux-amd64/mc -o mc
+curl -L -o mc https://dl.min.io/client/mc/release/linux-amd64/mc
 chmod +x mc
 sudo mv mc /usr/local/bin/
 
@@ -93,7 +93,7 @@ mc alias list local
 echo "✅ Configuração do MinIO concluída com sucesso!"
 # Script de renovação automática dos certificados (exemplo usando certbot) 
 #!/bin/bash
-#DOMAIN="minio.seudominio.com"
+#DOMAIN="15.stmip.net"  # Substitua pelo seu domínio
 #cp /etc/letsencrypt/live/$DOMAIN/fullchain.pem /storage/minio-certs/public.crt
 #cp /etc/letsencrypt/live/$DOMAIN/privkey.pem   /storage/minio-certs/private.key
 #chmod 600 /storage/minio-certs/private.key
