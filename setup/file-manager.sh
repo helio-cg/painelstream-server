@@ -88,6 +88,9 @@ mc alias set local http://localhost:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWOR
 echo "Alias configurado com sucesso!"
 mc alias list local
 
+# Configura o SSL para o MinIO
+/usr/local/painelstream/src/minio/ssl-minio.sh "$DOMAIN"
+echo "✅ Configuração do MinIO concluída com sucesso!"
 # Script de renovação automática dos certificados (exemplo usando certbot) 
 #!/bin/bash
 #DOMAIN="minio.seudominio.com"
