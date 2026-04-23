@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Esse sript não funciona bem
+# vou quere pegar dele apeans a parte de analisa 
+# se certificado foi atualizado e atualizar os links simbolicos para o minio
+
+
 set -euo pipefail
 
 DOMAIN="${1:-}"
@@ -68,8 +73,8 @@ fi
 log "Backup salvo em $BACKUP_DIR"
 
 # 🔗 Atualizar symlinks
-ln -sf "$FULLCHAIN" "$TARGET_DIR/public.crt"
-ln -sf "$PRIVKEY" "$TARGET_DIR/private.key"
+#ln -sf "$FULLCHAIN" "$TARGET_DIR/public.crt"
+#ln -sf "$PRIVKEY" "$TARGET_DIR/private.key"
 
 chmod 600 "$TARGET_DIR/private.key"
 chmod 644 "$TARGET_DIR/public.crt"

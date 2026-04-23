@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # exemplo: ps-user-add helihdjsh P4ssw0rd 5 50
-set -euo pipefail
+#set -euo pipefail
 
 # --------------------------
 # Variáveis
@@ -31,53 +31,37 @@ validate_listeners
 # --------------------------
 # Rollback só para criação do usuário
 # --------------------------
-rollback() {
-    echo "Erro detectado durante criacao do usuario..." >&2
-    if [ "$USER_CREATED" = true ]; then
-        sudo userdel -r "$USERNAME" 2>/dev/null || true
-    fi
-    echo "{\"status\":\"error\",\"message\":\"Falha na criacao da radio. Rollback executado.\"}"
-    exit 1
-}
+#rollback() {
+#    echo "Erro detectado durante criacao do usuario..." >&2
+#    if [ "$USER_CREATED" = true ]; then
+#        sudo userdel -r "$USERNAME" 2>/dev/null || true
+#    fi
+#    echo "{\"status\":\"error\",\"message\":\"Falha na criacao da radio. Rollback executado.\"}"
+#    exit 1
+#}
 
 # --------------------------
 # Criação do grupo e usuário
 # --------------------------
-trap rollback ERR
+#trap rollback ERR
 
-if ! getent group "$GROUP" >/dev/null; then
-    sudo groupadd "$GROUP"
-fi
+#if ! getent group "$GROUP" >/dev/null; then
+#    sudo groupadd "$GROUP"
+#fi
 
 #sudo /usr/sbin/useradd -m -d "$HOMEDIR" -s "$DEFAULT_SHELL" -g "$GROUP" "$USERNAME"
-sudo useradd -m -d "$HOMEDIR" -s /usr/sbin/nologin -g "$GROUP" "$USERNAME"
-USER_CREATED=true
-echo "$USERNAME:$PASSWORD" | sudo chpasswd
+#sudo useradd -m -d "$HOMEDIR" -s /usr/sbin/nologin -g "$GROUP" "$USERNAME"
+#USER_CREATED=true
+#echo "$USERNAME:$PASSWORD" | sudo chpasswd
 
-trap - ERR  # desativa rollback global após criação do usuário
+#trap - ERR  # desativa rollback global após criação do usuário
 
-# --------------------------
-# Estrutura de diretórios
-# --------------------------
-sudo mkdir -p \
-    #"$HOMEDIR/ftp/pastas/Comercial" \
-    #"$HOMEDIR/ftp/pastas/Vinhetas" \
-    "/storage/Comercial" \
-    "/storage/Vinhetas" \
-    "$HOMEDIR/configs" \
-    "$HOMEDIR/logs" \
-    "$HOMEDIR/playlists" \
-    "$HOMEDIR/stats"
-
-sudo chown root:root "$HOMEDIR"
-sudo chmod 755 "$HOMEDIR"
-#sudo chown -R "$USERNAME:$GROUP" "$HOMEDIR/ftp/pastas"
-#sudo chmod -R 775 "$HOMEDIR/ftp/pastas"
-sudo chown -R root:root "$HOMEDIR/configs" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
-sudo chmod -R 755 "$HOMEDIR/configs" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
-
+# Criação do bucket do MinIO
+mc mb local/$USERNAME
 # Criação do usuário no MinIO
-mc admin user add local $USERNAME $PASSWORD
+mc admin user add local/$USERNAME $USERNAME $PASSWORD
+# Adiciona limite de espaço para o usuário no MinIO (exemplo: 50GB)
+mc quota set local/$USERNAME --size "$QUOTA_GB"GB # Para atualizar só colocar novo valor de quota
 
 # --------------------------
 # Exporta variáveis para template policy-minio.tpl
@@ -88,9 +72,39 @@ DESTINO="$HOMEDIR/configs/policy-minio.json"
 envsubst < "$TEMPLATE_PATH" > "$DESTINO" || erro "falha ao gerar policy-minio.json"
 chmod 660 "$DESTINO" || erro "falha ao definir permissao do policy-minio.json"
 
+#mc admin policy create local hjjdskd-policy /home/hjjdskd/configs/policy-minio.json
 mc admin policy create local $USERNAME-policy $DESTINO
+#mc admin policy attach local hjjdskd-policy --user hjjdskd
 mc admin policy attach local $USERNAME-policy --user $USERNAME
-mc alias set $USERNAME http://localhost:9000 $USERNAME $PASSWORD
+#mc alias set $USERNAME http://localhost:9000 $USERNAME $PASSWORD
+
+# --------------------------
+# Estrutura de diretórios
+# --------------------------
+
+mkdir -p /home/$USERNAME
+sudo mkdir -p \
+    "/storage/$USERNAME/Comercial" \
+    "/storage/$USERNAME/Vinhetas" \
+    "$HOMEDIR/configs" \
+    "$HOMEDIR/logs" \
+    "$HOMEDIR/playlists" \
+    "$HOMEDIR/stats"
+    #"$HOMEDIR/ftp/pastas/Comercial" \
+    #"$HOMEDIR/ftp/pastas/Vinhetas" \
+
+sudo chown root:root "$HOMEDIR"
+sudo chmod 755 "$HOMEDIR"
+#sudo chown -R "$USERNAME:$GROUP" "$HOMEDIR/ftp/pastas"
+#sudo chmod -R 775 "$HOMEDIR/ftp/pastas"
+sudo chown -R root:root "$HOMEDIR/configs" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
+sudo chmod -R 755 "$HOMEDIR/configs" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
+
+
+
+
+
+
 
 # --------------------------
 # Exporta variáveis para template Mount

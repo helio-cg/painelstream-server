@@ -83,26 +83,20 @@ fi
 
 echo "⏳ Aguardando MinIO ficar disponível..."
 
-until curl -s http://localhost:9000/minio/health/live > /dev/null; do
+cp /etc/letsencrypt/live/$DOMAIN/fullchain.pem /storage/minio-certs/public.crt
+cp /etc/letsencrypt/live/$DOMAIN/privkey.pem   /storage/minio-certs/private.key
+chmod 600 /storage/minio-certs/private.key
+chmod 644 /storage/minio-certs/public.crt
+docker compose -f /usr/local/painelstream/src/minio/docker-compose.yml restart minio
+
+until curl -s https://$DOMAIN:9000/minio/health/live > /dev/null; do
   sleep 2
 done
 
 echo "✅ MinIO está pronto!"
 echo "Configurando alias do MinIO..."
-mc alias set local http://localhost:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+mc alias set local https://$DOMAIN:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
 #mc alias set local https://14.stmip.net:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
 
 echo "Alias configurado com sucesso!"
 mc alias list local
-
-# Configura o SSL para o MinIO
-#/usr/local/painelstream/src/minio/ssl-minio.sh "$DOMAIN"
-#echo "✅ Configuração do MinIO concluída com sucesso!"
-# Script de renovação automática dos certificados (exemplo usando certbot) 
-#!/bin/bash
-#DOMAIN="15.stmip.net"  # Substitua pelo seu domínio
-cp /etc/letsencrypt/live/$DOMAIN/fullchain.pem /storage/minio-certs/public.crt
-cp /etc/letsencrypt/live/$DOMAIN/privkey.pem   /storage/minio-certs/private.key
-chmod 600 /storage/minio-certs/private.key
-chmod 644 /storage/minio-certs/public.crt
-#docker compose -f /caminho/para/seu/docker-compose.yml restart minio
