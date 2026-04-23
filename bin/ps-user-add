@@ -28,6 +28,13 @@ is_password_valid
 validate_quota
 validate_listeners
 
+BYTES=$((QUOTA_GB * 1024 * 1024 * 1024))
+docker exec -it sftpgo sftpgo user add \
+  --username ${USERNAME} \
+  --password ${PASSWORD} \
+  --home-dir /data/${USERNAME} \
+  --quota-size ${BYTES} \
+  --permissions "*"
 # --------------------------
 # Rollback só para criação do usuário
 # --------------------------
