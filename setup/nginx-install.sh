@@ -4,7 +4,7 @@ DOMAIN="${1:-}"
 
 sudo apt install -y nginx
 sudo systemctl enable --now nginx
-sudo systemctl status nginx   # deve mostrar "active (running)"
+sudo systemctl status nginx
 
 sudo tee /etc/nginx/sites-available/$DOMAIN > /dev/null <<EOF
 server {
@@ -23,6 +23,20 @@ server {
         include proxy_params;
     }
 
+    # 🔥 SFTPGo (sem conflito)
+    location ^~ /storage/ {
+        proxy_pass http://127.0.0.1:8080/;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        proxy_redirect off;
+    }
+
     location / {
         try_files \$uri \$uri/ =404;
     }
@@ -32,17 +46,18 @@ server {
 }
 EOF
 
-sudo ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
+sudo ln -sf /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 
 mkdir -p /etc/nginx/includes/radios/
 chmod 755 /etc/nginx/includes/radios/
 
 # ==============================
-# Instalação do Certificado (Let's Encrypt)
+# SSL com Let's Encrypt
 # ==============================
 sudo apt install certbot python3-certbot-nginx -y
-echo "=== Obtendo certificado Let's Encrypt para $DOMAIN ==="
+
+echo "=== Gerando SSL para $DOMAIN ==="
 
 sudo certbot --nginx \
   -d "$DOMAIN" \
@@ -52,10 +67,9 @@ sudo certbot --nginx \
   --redirect \
   --no-eff-email
 
-# Verifica se deu certo
 if [ $? -eq 0 ]; then
-    echo "✅ Certificado instalado com sucesso!"
+    echo "✅ SSL configurado com sucesso!"
     sudo certbot renew --dry-run
 else
-    echo "❌ Erro ao obter o certificado."
+    echo "❌ Erro ao configurar SSL"
 fi
