@@ -8,6 +8,9 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/includes:/etc/nginx/includes
     restart: unless-stopped
+    networks:
+      - backend
+
   sftpgo:
     build: ./sftpgo
     container_name: sftpgo
@@ -15,7 +18,7 @@ services:
       - db
       - redis
     ports:
-      - "127.0.0.1:8080:8080"  # 🔥 só local (importante)
+      - "127.0.0.1:8080:8080"
       - "2022:2022"
     environment:
       - SFTPGO_DATA_PROVIDER__DRIVER=postgresql
