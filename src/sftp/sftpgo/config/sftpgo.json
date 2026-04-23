@@ -1,0 +1,11 @@
+{
+  "sftpd": {
+    "bind_port": 2022
+  },
+  "httpd": {
+    "bind_port": 8080
+  },
+  "data_provider": {
+    "driver": "postgresql"
+  }
+}

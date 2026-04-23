@@ -56,28 +56,6 @@ validate_listeners
 
 #trap - ERR  # desativa rollback global após criação do usuário
 
-# Criação do bucket do MinIO
-mc mb local/$USERNAME
-# Criação do usuário no MinIO
-mc admin user add local/$USERNAME $USERNAME $PASSWORD
-# Adiciona limite de espaço para o usuário no MinIO (exemplo: 50GB)
-mc quota set local/$USERNAME --size "$QUOTA_GB"GB # Para atualizar só colocar novo valor de quota
-
-# --------------------------
-# Exporta variáveis para template policy-minio.tpl
-# --------------------------
-export USERNAME 
-TEMPLATE_PATH="$PAINELSTREAM/src/minio/policy-minio.tpl"
-DESTINO="$HOMEDIR/configs/policy-minio.json"
-envsubst < "$TEMPLATE_PATH" > "$DESTINO" || erro "falha ao gerar policy-minio.json"
-chmod 660 "$DESTINO" || erro "falha ao definir permissao do policy-minio.json"
-
-#mc admin policy create local hjjdskd-policy /home/hjjdskd/configs/policy-minio.json
-mc admin policy create local $USERNAME-policy $DESTINO
-#mc admin policy attach local hjjdskd-policy --user hjjdskd
-mc admin policy attach local $USERNAME-policy --user $USERNAME
-#mc alias set $USERNAME http://localhost:9000 $USERNAME $PASSWORD
-
 # --------------------------
 # Estrutura de diretórios
 # --------------------------

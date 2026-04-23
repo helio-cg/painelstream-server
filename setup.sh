@@ -83,8 +83,6 @@ sudo ufw allow ssh
 sudo ufw allow http
 sudo ufw allow https
 sudo ufw allow 7998/tcp
-sudo ufw allow 9000/tcp # Porta de administração do MinIO
-sudo ufw allow 9001/tcp # Porta de administração do MinIO
 sudo ufw --force enable
 sudo ufw reload
 # Ver estatus e portas
@@ -96,8 +94,8 @@ $BASE_DIR/setup/nginx-install.sh "$DOMAIN"
 # Instalação do Docker e Docker Compose
 $BASE_DIR/setup/docker.sh
 
-# Instalação do MinIO para gerenciamento de arquivos
-$BASE_DIR/src/minio/file-manager.sh "$DOMAIN"
+# Inicia container SFTP para cada usuário
+docker compose -f $BASE_DIR/src/sftp/docker-compose.yml up -d
 
 # Configuração de quota para limitar espaço em disco
 #$BASE_DIR/setup/quota.sh "$MOUNT"
