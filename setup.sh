@@ -94,8 +94,8 @@ $BASE_DIR/setup/nginx-install.sh "$DOMAIN"
 # Instalação do Docker e Docker Compose
 $BASE_DIR/setup/docker.sh
 
-# Inicia container SFTP para cada usuário
-docker compose -f $BASE_DIR/src/sftp/docker-compose.yml up -d
+# Instalação do SFTPGo
+$BASE_DIR/src/sftp/scripts/sftp-install.sh
 
 # Configuração de quota para limitar espaço em disco
 #$BASE_DIR/setup/quota.sh "$MOUNT"

@@ -28,6 +28,8 @@ is_password_valid
 validate_quota
 validate_listeners
 
+mkdir -p /data/${USERNAME}
+
 BYTES=$((QUOTA_GB * 1024 * 1024 * 1024))
 docker exec -it sftpgo sftpgo user add \
   --username ${USERNAME} \
