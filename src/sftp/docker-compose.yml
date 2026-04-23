@@ -1,4 +1,13 @@
 services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "2087:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/includes:/etc/nginx/includes
+    restart: unless-stopped
   sftpgo:
     build: ./sftpgo
     container_name: sftpgo
