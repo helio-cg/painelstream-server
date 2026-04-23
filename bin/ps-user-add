@@ -67,7 +67,7 @@ mc quota set local/$USERNAME --size "$QUOTA_GB"GB # Para atualizar só colocar n
 # Exporta variáveis para template policy-minio.tpl
 # --------------------------
 export USERNAME 
-TEMPLATE_PATH="$PAINELSTREAM/templates/policy-minio.tpl"
+TEMPLATE_PATH="$PAINELSTREAM/src/minio/policy-minio.tpl"
 DESTINO="$HOMEDIR/configs/policy-minio.json"
 envsubst < "$TEMPLATE_PATH" > "$DESTINO" || erro "falha ao gerar policy-minio.json"
 chmod 660 "$DESTINO" || erro "falha ao definir permissao do policy-minio.json"

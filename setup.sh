@@ -97,7 +97,7 @@ $BASE_DIR/setup/nginx-install.sh "$DOMAIN"
 $BASE_DIR/setup/docker.sh
 
 # Instalação do MinIO para gerenciamento de arquivos
-$BASE_DIR/setup/file-manager.sh "$DOMAIN"
+$BASE_DIR/src/minio/file-manager.sh "$DOMAIN"
 
 # Configuração de quota para limitar espaço em disco
 #$BASE_DIR/setup/quota.sh "$MOUNT"
