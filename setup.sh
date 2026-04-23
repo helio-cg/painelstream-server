@@ -90,10 +90,10 @@ sudo ufw reload
 # sudo ufw status verbose
 
 # Configura proxy reverso com Nginx
-$BASE_DIR/setup/sftpgo.sh "$DOMAIN"
+$BASE_DIR/setup/nginx-install.sh "$DOMAIN"
 
 # Configura proxy reverso com Nginx
-$BASE_DIR/setup/nginx-install.sh "$DOMAIN"
+$BASE_DIR/setup/sftpgo.sh "$DOMAIN"
 
 # Instalação do Docker e Docker Compose
 $BASE_DIR/setup/docker.sh

@@ -14,7 +14,19 @@ server {
     root /usr/local/painelstream/public;
     index index.html index.htm index.nginx-debian.html;
 
-    location /storage/ {
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+
+    include /etc/nginx/includes/radios/*.conf;
+    include /etc/nginx/includes/*.conf;
+}
+
+server {
+    listen 80;
+    server_name storage.$DOMAIN;
+
+    location / {
         proxy_pass http://127.0.0.1:8080;
 
         proxy_set_header Host \$host;
@@ -26,14 +38,10 @@ server {
         proxy_set_header Connection "upgrade";
 
         proxy_read_timeout 300;
-    }
 
-    location / {
-        try_files \$uri \$uri/ =404;
+        access_log /var/log/nginx/sftp_access.log;
+        error_log /var/log/nginx/sftp_error.log;
     }
-
-    include /etc/nginx/includes/radios/*.conf;
-    include /etc/nginx/includes/*.conf;
 }
 EOF
 
@@ -52,6 +60,7 @@ echo "=== Gerando SSL para $DOMAIN ==="
 
 sudo certbot --nginx \
   -d "$DOMAIN" \
+  -d "storage.$DOMAIN" \
   --non-interactive \
   --agree-tos \
   --email "falecom@elicast.app" \

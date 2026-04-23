@@ -1,7 +1,6 @@
 #!/bin/bash
 
 DOMAIN=$1
-EMAIL="[falecom@elicast.app](mailto:falecom@elicast.app)"
 
 if [ -z "$DOMAIN" ]; then
 echo "❌ Uso: ./sftpgo.sh dominio.com"
@@ -10,7 +9,7 @@ fi
 
 echo "🚀 Instalando dependências..."
 apt update
-apt install -y curl gnupg nginx certbot python3-certbot-nginx
+apt install -y curl gnupg
 
 echo "🔑 Instalando SFTPGo..."
 curl -sS https://download.sftpgo.com/apt/gpg.key | 
