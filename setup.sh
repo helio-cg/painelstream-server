@@ -51,7 +51,7 @@ echo "✅ Prosseguindo com configuração para $DOMAIN..."
 # ==============================
 apt update -y
 apt upgrade -y
-apt install git rsync ca-certificates libxml2-utils ufw python3-mutagen -y
+apt install git rsync ca-certificates libxml2-utils ufw python3-mutagen jq -y
 # Codec AAC, MP3 e OPUS
 sudo apt install libfdk-aac-dev fdkaac libmp3lame-dev lame libopus0 libopusfile0 libogg0 opus-tools -y
 # Instalação do Icecast2
