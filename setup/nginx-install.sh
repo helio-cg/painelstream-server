@@ -18,6 +18,10 @@ server {
         try_files \$uri \$uri/ =404;
     }
 
+    location /api/ {
+        proxy_pass http://127.0.0.1:3000/;
+    }
+
     include /etc/nginx/includes/radios/*.conf;
     include /etc/nginx/includes/*.conf;
 }
