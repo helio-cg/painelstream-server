@@ -13,7 +13,7 @@ chmod +x setup.sh
 
 
 # Comandos para teste em desenvolvimento
-rsync --progress -e 'ssh -p'22 -avz --recursive --rsync-path="sudo rsync" --exclude='.git' /home/helio/GitHub/painelstream-server/ root@15.stmip.net:/usr/local/painelstream/
+rsync --progress -e 'ssh -p'22 -avz --recursive --rsync-path="sudo rsync" --exclude='.git' /home/helio/GitHub/painelstream-server/ root@16.stmip.net:/usr/local/painelstream/
 
 /usr/local/painelstream-server/bin/create.sh
 
