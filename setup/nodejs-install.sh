@@ -11,10 +11,10 @@ sudo apt install -y nodejs
 sudo apt install -y redis-server
 
 # iniciar serviços
-sudo systemctl enable redis
-sudo systemctl start redis
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
 
-sudo systemctl status redis
+sudo systemctl status redis-server
 redis-cli ping
 # deve responder: PONG
 

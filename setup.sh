@@ -83,7 +83,7 @@ sudo ufw allow ssh
 sudo ufw allow http
 sudo ufw allow https
 sudo ufw allow 8000/tcp
-sudo ufw allow 8080/tcp
+#sudo ufw allow 8080/tcp
 sudo ufw --force enable
 sudo ufw reload
 # Ver estatus e portas
@@ -94,6 +94,9 @@ $BASE_DIR/setup/nginx-install.sh "$DOMAIN"
 
 # Configura proxy reverso com Nginx
 $BASE_DIR/setup/sftpgo.sh "$DOMAIN"
+
+# Configura proxy reverso com Nginx
+$BASE_DIR/setup/nodejs-install.sh "$DOMAIN"
 
 # Instalação do Docker e Docker Compose
 # $BASE_DIR/setup/docker.sh

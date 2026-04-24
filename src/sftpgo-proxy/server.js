@@ -5,6 +5,15 @@ const { processMP3List } = require("./mp3");
 
 const app = Fastify();
 
+app.get("/", async () => {
+  return {
+    status: "ok",
+    servico: "sftpgo-proxy",
+    online: true,
+    timestamp: new Date()
+  };
+});
+
 // login
 app.post("/login", async (req, reply) => {
   const { username, password } = req.body;
