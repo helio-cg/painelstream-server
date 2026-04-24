@@ -17,6 +17,8 @@ rsync --progress -e 'ssh -p'22 -avz --recursive --rsync-path="sudo rsync" --excl
 
 /usr/local/painelstream-server/bin/create.sh
 
+# caminho do banco sftpgo: /var/lib/sftpgo/sftpgo.db
+
 # DOC: https://docs.sftpgo.com/enterprise/rest-api/#case-a-creating-a-standalone-user-no-group
 # SFTPGo endpoint and credentials
 ENDPOINT="https://storage.16.stmip.net"

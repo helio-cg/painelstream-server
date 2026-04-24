@@ -46,6 +46,8 @@ sudo chown root:root "$HOMEDIR"
 sudo chmod 755 "$HOMEDIR"
 sudo chown -R root:root "$HOMEDIR/configs" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
 sudo chmod -R 755 "$HOMEDIR/configs" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
+sudo chown -R sftpgo:sftpgo "$HOMEDIR/midia"
+sudo chmod -R 770 "$HOMEDIR/midia"
 
 # --------------------------
 # Exporta variáveis para template Mount
