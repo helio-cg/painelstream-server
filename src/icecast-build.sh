@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-BASE="/usr/local/painelstream/templates/icecast-base.xml"
+BASE="/usr/local/painelstream/src/templates/icecast-base.xml"
 OUTPUT="/etc/icecast2/icecast.xml"
 BACKUP="/etc/icecast2/icecast.xml.bak"
 

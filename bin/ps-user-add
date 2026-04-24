@@ -98,7 +98,7 @@ sudo chmod -R 755 "$HOMEDIR/configs" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOME
 # --------------------------
 export USERNAME PASSWORD LISTENERS
 
-TEMPLATE_PATH="$PAINELSTREAM/templates/mount.tpl"
+TEMPLATE_PATH="$PAINELSTREAM/src/templates/mount.tpl"
 DESTINO="$HOMEDIR/configs/mount.xml"
 
 # --------------------------

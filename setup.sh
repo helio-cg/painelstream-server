@@ -74,7 +74,7 @@ chown root:root /usr/local/painelstream/func/main.sh
 # ==============================
 # Atualiza base xml do Icecast
 # ==============================
-sudo cp -f /usr/local/painelstream/templates/icecast-base.xml /etc/icecast2/icecast.xml
+sudo cp -f /usr/local/painelstream/src/templates/icecast-base.xml /etc/icecast2/icecast.xml
 
 # ==============================
 # Habilita Firwall
@@ -82,7 +82,7 @@ sudo cp -f /usr/local/painelstream/templates/icecast-base.xml /etc/icecast2/icec
 sudo ufw allow ssh
 sudo ufw allow http
 sudo ufw allow https
-sudo ufw allow 7998/tcp
+sudo ufw allow 8000/tcp
 sudo ufw allow 8080/tcp
 sudo ufw --force enable
 sudo ufw reload
