@@ -12,6 +12,7 @@ LISTENERS="${4:-}"
 HIDE=2
 USER_CREATED=false
 HOMEDIR="/home/$USERNAME"
+BYTES=$((QUOTA_GB * 1024 * 1024 * 1024))
 
 # --------------------------
 # Includes e paths
@@ -28,70 +29,23 @@ is_password_valid
 validate_quota
 validate_listeners
 
-mkdir -p /data/${USERNAME}
-
-BYTES=$((QUOTA_GB * 1024 * 1024 * 1024))
-docker exec -it sftpgo sftpgo user add \
-  --username ${USERNAME} \
-  --password ${PASSWORD} \
-  --home-dir /data/${USERNAME} \
-  --quota-size ${BYTES} \
-  --permissions "*"
-# --------------------------
-# Rollback só para criação do usuário
-# --------------------------
-#rollback() {
-#    echo "Erro detectado durante criacao do usuario..." >&2
-#    if [ "$USER_CREATED" = true ]; then
-#        sudo userdel -r "$USERNAME" 2>/dev/null || true
-#    fi
-#    echo "{\"status\":\"error\",\"message\":\"Falha na criacao da radio. Rollback executado.\"}"
-#    exit 1
-#}
-
-# --------------------------
-# Criação do grupo e usuário
-# --------------------------
-#trap rollback ERR
-
-#if ! getent group "$GROUP" >/dev/null; then
-#    sudo groupadd "$GROUP"
-#fi
-
-#sudo /usr/sbin/useradd -m -d "$HOMEDIR" -s "$DEFAULT_SHELL" -g "$GROUP" "$USERNAME"
-#sudo useradd -m -d "$HOMEDIR" -s /usr/sbin/nologin -g "$GROUP" "$USERNAME"
-#USER_CREATED=true
-#echo "$USERNAME:$PASSWORD" | sudo chpasswd
-
-#trap - ERR  # desativa rollback global após criação do usuário
-
 # --------------------------
 # Estrutura de diretórios
 # --------------------------
 
 mkdir -p /home/$USERNAME
 sudo mkdir -p \
-    "/storage/$USERNAME/Comercial" \
-    "/storage/$USERNAME/Vinhetas" \
     "$HOMEDIR/configs" \
     "$HOMEDIR/logs" \
     "$HOMEDIR/playlists" \
-    "$HOMEDIR/stats"
-    #"$HOMEDIR/ftp/pastas/Comercial" \
-    #"$HOMEDIR/ftp/pastas/Vinhetas" \
+    "$HOMEDIR/stats" \
+    "$HOMEDIR/midia/Comercial" \
+    "$HOMEDIR/midia/Vinhetas" \
 
 sudo chown root:root "$HOMEDIR"
 sudo chmod 755 "$HOMEDIR"
-#sudo chown -R "$USERNAME:$GROUP" "$HOMEDIR/ftp/pastas"
-#sudo chmod -R 775 "$HOMEDIR/ftp/pastas"
 sudo chown -R root:root "$HOMEDIR/configs" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
 sudo chmod -R 755 "$HOMEDIR/configs" "$HOMEDIR/logs" "$HOMEDIR/playlists" "$HOMEDIR/stats"
-
-
-
-
-
-
 
 # --------------------------
 # Exporta variáveis para template Mount
@@ -111,12 +65,6 @@ chmod 660 "$DESTINO" || erro "falha ao definir permissao do mount.xml"
 # Reload icecast.xml
 # --------------------------
 sudo "$PAINELSTREAM/src/icecast-build.sh" || erro "Falha ao buildar Icecast"
-
-# --------------------------
-# Define quota
-# --------------------------
-#KB=$((QUOTA_GB * 1024 * 1024))
-#sudo setquota -u "$USERNAME" "$KB" "$KB" 0 0 "$FS_MOUNT" || erro "Falha ao definir quota"
 
 # --------------------------
 # Logs
