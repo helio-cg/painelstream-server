@@ -6,6 +6,11 @@ FS_MOUNT="/"
 DEFAULT_SHELL="/usr/sbin/nologin"
 PAINELSTREAM="/usr/local/painelstream"
 
+# SFTPGO CONFIG
+ENDPOINT="https://storage.16.stmip.net"
+ADMIN_USER="admin"
+ADMIN_PASSWORD="1234567"
+
 erro() { echo "{\"status\":\"error\",\"message\":\"$1\"}" >&2; exit 1; }
 sucesso() { echo "{\"status\":\"success\",\"message\":\"$1\",\"data\":{\"user\":\"$USERNAME\"}}"; exit 0; }
 is_number() { [[ "$1" =~ ^[0-9]+$ ]]; }

@@ -50,6 +50,47 @@ sudo chown -R sftpgo:sftpgo "$HOMEDIR/midia"
 sudo chmod -R 770 "$HOMEDIR/midia"
 
 # --------------------------
+# Criação do usuário no ftpgo
+# --------------------------
+TOKEN=$(curl --anyauth -s -u "${ADMIN_USER}:${ADMIN_PASSWORD}" \
+  "${ENDPOINT}/api/v2/token" | jq -r .access_token)
+
+USER_PAYLOAD=$(cat <<EOF
+curl -X POST "http://SEU_HOST:8080/api/v2/users" \
+  -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "${USERNAME}",
+    "password": "${PASSWORD}",
+    "status": 1,
+
+    "home_dir": "/home/${USERNAME}/midia",
+
+    "filesystem": {
+      "provider": "local"
+    },
+
+    "permissions": {
+      "/": ["*"]
+    },
+
+    "groups": [
+      {
+        "name": "default",
+        "type": 1
+      }
+    ]
+}'
+EOF
+
+# Create the user
+curl -X POST \
+  -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d "${USER_PAYLOAD}" \
+  "${ENDPOINT}/api/v2/users"
+
+# --------------------------
 # Exporta variáveis para template Mount
 # --------------------------
 export USERNAME PASSWORD LISTENERS
