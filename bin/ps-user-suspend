@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 # exemplo: ps-user-suspend USERNAME
 
-set -euo pipefail
-
 # --------------------------
 # Variáveis
 # --------------------------
@@ -18,7 +16,7 @@ source "$DIR/../func/libs/logger.sh"
 # ---------------------------
 # Validação
 # ---------------------------
-is_user_valid
+#is_user_valid
 
 # --------------------------
 # Includes e paths
@@ -47,8 +45,19 @@ sudo "$PAINELSTREAM/src/icecast-build.sh" || true
 # --------------------------
 # Bloqueia usuário
 # --------------------------
-sudo usermod -L "$USERNAME"
-sudo usermod -s /usr/sbin/nologin "$USERNAME"
+TOKEN=$(curl --anyauth -s -u "${ADMIN_USER}:${ADMIN_PASSWORD}" \
+  "${ENDPOINT}/api/v2/token" | jq -r .access_token)
+
+USER_DATA=$(curl -s -X GET "${ENDPOINT}/api/v2/users/${USERNAME}" \
+  -H "Authorization: Bearer ${TOKEN}")
+
+UPDATED=$(echo "$USER_DATA" | jq '.status = 0')
+
+curl -X PUT "${ENDPOINT}/api/v2/users/${USERNAME}" \
+  -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d "$UPDATED"
+
 
 # --------------------------
 # Resposta de sucesso

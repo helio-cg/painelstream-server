@@ -56,39 +56,26 @@ TOKEN=$(curl --anyauth -s -u "${ADMIN_USER}:${ADMIN_PASSWORD}" \
   "${ENDPOINT}/api/v2/token" | jq -r .access_token)
 
 USER_PAYLOAD=$(cat <<EOF
-curl -X POST "http://SEU_HOST:8080/api/v2/users" \
-  -H "Authorization: Bearer ${TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "${USERNAME}",
-    "password": "${PASSWORD}",
-    "status": 1,
-
-    "home_dir": "/home/${USERNAME}/midia",
-
-    "filesystem": {
-      "provider": "local"
-    },
-
-    "permissions": {
-      "/": ["*"]
-    },
-
-    "groups": [
-      {
-        "name": "default",
-        "type": 1
-      }
-    ]
-}'
+{
+  "username": "${USERNAME}",
+  "password": "${PASSWORD}",
+  "status": 1,
+  "home_dir": "/home/${USERNAME}/midia",
+  "filesystem": {
+    "provider": 0
+  },
+  "permissions": {
+    "/": ["*"]
+  }
+}
 EOF
+)
 
-# Create the user
-curl -X POST \
+curl -X POST "${ENDPOINT}/api/v2/users" \
   -H "Authorization: Bearer ${TOKEN}" \
   -H "Content-Type: application/json" \
-  -d "${USER_PAYLOAD}" \
-  "${ENDPOINT}/api/v2/users"
+  -d "${USER_PAYLOAD}"
+
 
 # --------------------------
 # Exporta variáveis para template Mount

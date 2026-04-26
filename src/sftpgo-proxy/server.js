@@ -1,55 +1,86 @@
 const Fastify = require("fastify");
-const { login, listFiles } = require("./sftpgo");
-const { decodePath, safePath } = require("./utils");
+const path = require("path");
+
+const { listFiles } = require("./fs");
+const { decodePath } = require("./utils");
 const { processMP3List } = require("./mp3");
 
-const app = Fastify();
+const app = Fastify({ logger: true });
 
+// ===== CONFIG =====
+function getBaseDir(username) {
+  return `/home/${username}/midia`;
+}
+
+// ===== VALIDAR USER =====
+function isValidUsername(username) {
+  return /^[a-zA-Z0-9_-]+$/.test(username);
+}
+
+// ===== SEGURANÇA PATH =====
+function safePath(base, target) {
+  const resolved = path.resolve(base, target || "");
+
+  if (!resolved.startsWith(base)) {
+    throw new Error("acesso inválido");
+  }
+
+  return resolved;
+}
+
+// ===== RATE LIMIT =====
+app.register(require("@fastify/rate-limit"), {
+  max: 100,
+  timeWindow: "1 minute",
+});
+
+// ===== ROOT =====
 app.get("/", async () => {
   return {
     status: "ok",
-    servico: "sftpgo-proxy",
-    online: true,
-    timestamp: new Date()
+    servico: "filesystem-proxy",
+    publico: true,
+    timestamp: new Date(),
   };
 });
 
-// login
-app.post("/login", async (req, reply) => {
-  const { username, password } = req.body;
+// ===== LISTA RAIZ =====
+app.get("/usuario/:username", async (req, reply) => {
+  const { username } = req.params;
+
+  if (!isValidUsername(username)) {
+    return reply.code(400).send({ erro: "usuário inválido" });
+  }
+
+  const base = getBaseDir(username);
 
   try {
-    const token = await login(username, password);
-    return { ok: true, token };
-  } catch {
-    reply.code(401).send({ erro: "login inválido" });
+    const files = await listFiles(base);
+
+    return {
+      path: base,
+      conteudo: files,
+    };
+  } catch (e) {
+    req.log.error(e);
+    return reply.code(500).send({ erro: "erro ao acessar diretório" });
   }
 });
 
-// raiz
-app.get("/usuario/:username", async (req) => {
-  const { username } = req.params;
-
-  const base = `/home/${username}/midia`;
-
-  const files = await listFiles(username, base);
-
-  return {
-    path: base,
-    conteudo: files,
-  };
-});
-
-// pasta segura
+// ===== LISTA PASTA =====
 app.get("/usuario/:username/pasta/:b64", async (req, reply) => {
   const { username, b64 } = req.params;
 
+  if (!isValidUsername(username)) {
+    return reply.code(400).send({ erro: "usuário inválido" });
+  }
+
   try {
     const decoded = decodePath(b64);
-    const safe = safePath(username, decoded);
+    const base = getBaseDir(username);
+    const safe = safePath(base, decoded);
 
-    const files = await listFiles(username, safe);
-
+    const files = await listFiles(safe);
     const result = await processMP3List(files, safe);
 
     return {
@@ -57,8 +88,15 @@ app.get("/usuario/:username/pasta/:b64", async (req, reply) => {
       conteudo: result,
     };
   } catch (e) {
-    reply.code(403).send({ erro: e.message });
+    req.log.error(e);
+    return reply.code(403).send({ erro: e.message });
   }
 });
 
-app.listen({ port: 3000, host: "127.0.0.1" });
+// ===== START =====
+app.listen({ port: 3000, host: "0.0.0.0" })
+  .then(() => console.log("🚀 API rodando em http://localhost:3000"))
+  .catch(err => {
+    console.error(err);
+    process.exit(1);
+  });

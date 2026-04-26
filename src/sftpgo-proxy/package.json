@@ -6,6 +6,10 @@
   "dependencies": {
     "axios": "^1.6.0",
     "fastify": "^4.0.0",
+    "@fastify/rate-limit": "^9.0.0",
+    "@fastify/cors": "^9.0.0",
+    "@fastify/compress": "^7.0.0",
+    "@fastify/caching": "^8.0.0",
     "ioredis": "^5.0.0",
     "music-metadata": "^7.0.0"
   }

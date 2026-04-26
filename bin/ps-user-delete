@@ -18,7 +18,7 @@ source "$DIR/../func/libs/logger.sh"
 # ---------------------------
 # Validação
 # ---------------------------
-is_user_valid
+#is_user_valid
 
 
 # --------------------------
@@ -34,11 +34,52 @@ pkill -u "$USERNAME" 2>/dev/null || true
 # --------------------------
 # Remove usuário e diretórios
 # --------------------------
-# Remove o usuário do sistema
-sudo userdel "$USERNAME" || erro "falha ao remover usuario"
 
-# Remove manualmente o home se existir
-[[ -d "/home/$USERNAME" ]] && sudo rm -rf "/home/$USERNAME"
+# ===== VALIDAÇÃO =====
+if [ -z "$USERNAME" ]; then
+  echo "❌ Uso: $0 usuario"
+  exit 1
+fi
+
+# ===== GERAR TOKEN =====
+echo "🔐 Gerando token..."
+TOKEN=$(curl --anyauth -s -u "${ADMIN_USER}:${ADMIN_PASSWORD}" \
+  "${ENDPOINT}/api/v2/token" | jq -r .access_token)
+
+if [ "$TOKEN" = "null" ] || [ -z "$TOKEN" ]; then
+  echo "❌ Erro ao obter token"
+  exit 1
+fi
+
+# ===== VERIFICAR SE USUÁRIO EXISTE =====
+echo "🔍 Verificando usuário..."
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+  -H "Authorization: Bearer ${TOKEN}" \
+  "${ENDPOINT}/api/v2/users/${USERNAME}")
+
+if [ "$HTTP_CODE" != "200" ]; then
+  echo "❌ Usuário não encontrado (${USERNAME})"
+  exit 1
+fi
+
+# ===== DELETAR USUÁRIO =====
+echo "🗑️ Removendo usuário no SFTPGo..."
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+  "${ENDPOINT}/api/v2/users/${USERNAME}" \
+  -H "Authorization: Bearer ${TOKEN}")
+
+if [[ ! "$HTTP_CODE" =~ ^2 ]]; then
+  echo "❌ Erro ao remover usuário (HTTP $HTTP_CODE)"
+  erro "falha ao remover usuário do SFTPGo"
+fi
+
+echo "✅ Usuário removido do SFTPGo"
+
+# ===== REMOVER ARQUIVOS =====
+USER_DIR="/home/${USERNAME}"
+echo "🧹 Removendo arquivos em $USER_DIR..."
+[[ -d "$USER_DIR" ]] && sudo rm -rf "$USER_DIR"
+echo "✅ Pasta removida"
 
 # --------------------------
 # Rebuild Icecast

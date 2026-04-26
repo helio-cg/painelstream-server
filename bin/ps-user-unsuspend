@@ -19,7 +19,7 @@ source "$DIR/../func/libs/logger.sh"
 # ---------------------------
 # Validação
 # ---------------------------
-is_user_valid
+#is_user_valid
 
 # --------------------------
 # Includes e paths
@@ -49,8 +49,18 @@ sudo chmod 660 "$MOUNT_XML" || erro "falha ao definir permissao do mount.xml"
 # --------------------------
 # Desbloqueia usuário
 # --------------------------
-sudo usermod -U "$USERNAME"
-sudo usermod -s $DEFAULT_SHELL "$USERNAME"
+TOKEN=$(curl --anyauth -s -u "${ADMIN_USER}:${ADMIN_PASSWORD}" \
+  "${ENDPOINT}/api/v2/token" | jq -r .access_token)
+
+USER_DATA=$(curl -s -X GET "${ENDPOINT}/api/v2/users/${USERNAME}" \
+  -H "Authorization: Bearer ${TOKEN}")
+
+UPDATED=$(echo "$USER_DATA" | jq '.status = 1')
+
+curl -X PUT "${ENDPOINT}/api/v2/users/${USERNAME}" \
+  -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d "$UPDATED"
 
 # --------------------------
 # Reload icecast.xml
